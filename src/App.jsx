@@ -1,17 +1,10 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
+import Shop from "./pages/Shop";
 
 import Home from "./pages/Home";
 
-function Shop() {
-  return (
-    <div className="mx-auto max-w-7xl px-6 py-16">
-      <h1 className="text-3xl font-bold text-gray-900">
-        Shop
-      </h1>
-    </div>
-  );
-}
+
 
 function Cart() {
   return (
