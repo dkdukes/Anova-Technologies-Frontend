@@ -1,8 +1,7 @@
-import { useState } from 'react'
-import { BrowserRouter,Routes,Route } from 'react-router-dom'
-import MainLayout from './layouts/MainLayout'
-import Navbar from './components/Navbar'
-import Home from './pages/Home'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import MainLayout from "./layouts/MainLayout";
+
+import Home from "./pages/Home";
 
 function Shop() {
   return (
@@ -34,34 +33,35 @@ function Login() {
   );
 }
 
-
 export default function App() {
   return (
     <BrowserRouter>
 
-      <Navbar />
-
       <Routes>
 
-        <Route
-          path="/"
-          element={<Home />}
-        />
+        <Route element={<MainLayout />}>
 
-        <Route
-          path="/shop"
-          element={<Shop />}
-        />
+          <Route
+            path="/"
+            element={<Home />}
+          />
 
-        <Route
-          path="/cart"
-          element={<Cart />}
-        />
+          <Route
+            path="/shop"
+            element={<Shop />}
+          />
 
-        <Route
-          path="/login"
-          element={<Login />}
-        />
+          <Route
+            path="/cart"
+            element={<Cart />}
+          />
+
+          <Route
+            path="/login"
+            element={<Login />}
+          />
+
+        </Route>
 
       </Routes>
 
