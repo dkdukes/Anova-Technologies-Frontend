@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import Shop from "./pages/Shop";
+import ProductDetails from "./pages/ProductDetails";
 
 import Home from "./pages/Home";
 
@@ -52,6 +53,11 @@ export default function App() {
           <Route
             path="/login"
             element={<Login />}
+          />
+
+          <Route 
+            path="/products/:slug"
+            element={<ProductDetails/>}
           />
 
         </Route>
