@@ -2,20 +2,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import MainLayout from "./layouts/MainLayout";
 import Shop from "./pages/Shop";
 import ProductDetails from "./pages/ProductDetails";
+import Cart from "./pages/Cart";
 
 import Home from "./pages/Home";
 
 
 
-function Cart() {
-  return (
-    <div className="mx-auto max-w-7xl px-6 py-16">
-      <h1 className="text-3xl font-bold text-gray-900">
-        Shopping Cart
-      </h1>
-    </div>
-  );
-}
+
 
 function Login() {
   return (
@@ -58,6 +51,11 @@ export default function App() {
           <Route 
             path="/products/:slug"
             element={<ProductDetails/>}
+          />
+
+          <Route 
+            path="/cart"
+            element={<Cart/>}
           />
 
         </Route>

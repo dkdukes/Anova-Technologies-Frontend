@@ -1,19 +1,23 @@
-import ProductGallery from "../components/ProductGallery";
-import QuantitySelector from "../components/QuantitySelector";
-import { useCart } from "../context/CartContext";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import api from "../services/api";
+import ProductGallery from "../components/ProductGallery";
+import QuantitySelector from "../components/QuantitySelector";
+import { useCart } from "../context/CartContext";
 
 export default function ProductDetails() {
   const { slug } = useParams();
-  const {addToCart}= useCart();
-  const {quantity,setQuantity}=useState(1);
+
+  const { addToCart } = useCart();
 
   const [product, setProduct] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [addedToCart, setAddedToCart] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -27,9 +31,7 @@ export default function ProductDetails() {
       } catch (err) {
         console.error("Product details error:", err);
 
-        setError(
-          "We couldn't find this product. Please try again."
-        );
+        setError("We couldn't find this product.");
       } finally {
         setLoading(false);
       }
@@ -38,10 +40,24 @@ export default function ProductDetails() {
     fetchProduct();
   }, [slug]);
 
+  const handleAddToCart = () => {
+    if (!product || product.stock_quantity <= 0) {
+      return;
+    }
+
+    addToCart(product, quantity);
+
+    setAddedToCart(true);
+
+    setTimeout(() => {
+      setAddedToCart(false);
+    }, 2500);
+  };
+
   /* Loading */
   if (loading) {
     return (
-      <div className="mx-auto flex min-h-[500px] max-w-7xl flex-col items-center justify-center px-6">
+      <div className="flex min-h-[500px] flex-col items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600" />
 
         <p className="mt-4 text-gray-500">
@@ -55,7 +71,6 @@ export default function ProductDetails() {
   if (error || !product) {
     return (
       <div className="mx-auto max-w-7xl px-6 py-20 text-center">
-
         <div className="text-6xl">
           😕
         </div>
@@ -74,26 +89,17 @@ export default function ProductDetails() {
         >
           Back to Shop
         </Link>
-
       </div>
     );
   }
 
-  const hasImages =
-    product.images && product.images.length > 0;
-
-  const specifications =
-    product.specifications || [];
-
-  const isInStock =
-    product.stock_quantity > 0;
+  const isInStock = product.stock_quantity > 0;
 
   return (
-    <section className="mx-auto max-w-7xl px-6 py-10">
+    <section className="relative mx-auto max-w-7xl px-6 py-10">
 
       {/* Breadcrumb */}
       <nav className="mb-8 text-sm text-gray-500">
-
         <Link
           to="/"
           className="hover:text-blue-600"
@@ -119,26 +125,19 @@ export default function ProductDetails() {
         <span className="text-gray-900">
           {product.name}
         </span>
-
       </nav>
 
 
-      {/* Main Product */}
+      {/* Product */}
       <div className="grid gap-10 lg:grid-cols-2">
 
-        {/* =================================================
-            PRODUCT IMAGE
-        ================================================== */}
+        {/* Gallery */}
         <div>
-
-          <ProductGallery product={product}/>
-
+          <ProductGallery product={product} />
         </div>
 
 
-        {/* =================================================
-            PRODUCT INFORMATION
-        ================================================== */}
+        {/* Product Information */}
         <div>
 
           {/* Brand */}
@@ -162,8 +161,8 @@ export default function ProductDetails() {
           </p>
 
 
-          {/* Short description */}
-          <p className="mt-6 text-base leading-7 text-gray-600">
+          {/* Description */}
+          <p className="mt-6 leading-7 text-gray-600">
             {product.short_description}
           </p>
 
@@ -209,7 +208,7 @@ export default function ProductDetails() {
           <div className="mt-6">
 
             {isInStock ? (
-              <div>
+              <>
                 <p className="font-semibold text-green-600">
                   ✓ In Stock
                 </p>
@@ -217,7 +216,7 @@ export default function ProductDetails() {
                 <p className="mt-1 text-sm text-gray-500">
                   {product.stock_quantity} units available
                 </p>
-              </div>
+              </>
             ) : (
               <p className="font-semibold text-red-600">
                 Out of Stock
@@ -229,58 +228,64 @@ export default function ProductDetails() {
 
           {/* Warranty */}
           {product.warranty && (
-            <div className="mt-5 flex items-center gap-3 rounded-lg bg-gray-50 p-4">
+            <div className="mt-5 rounded-lg bg-gray-50 p-4">
 
-              <span className="text-xl">
-                🛡️
-              </span>
+              <p className="font-semibold text-gray-900">
+                🛡️ Warranty
+              </p>
 
-              <div>
-                <p className="text-sm font-semibold text-gray-900">
-                  Warranty
-                </p>
-
-                <p className="text-sm text-gray-500">
-                  {product.warranty}
-                </p>
-              </div>
+              <p className="mt-1 text-sm text-gray-500">
+                {product.warranty}
+              </p>
 
             </div>
           )}
 
 
-          {/* Add to cart */}
-          <div className="mt-7 flex gap-3">
+          {/* Quantity */}
+          {isInStock && (
+            <div className="mt-6">
 
-            {isInStock && (
-                <div className="mt-6">
-                    <QuantitySelector
-                    stock={product.stock_quantity}
-                    onChange={setQuantity}
-                    />
-                </div>
-            )}
+              <QuantitySelector
+                stock={product.stock_quantity}
+                onChange={setQuantity}
+              />
+
+            </div>
+          )}
+
+
+          {/* Add to Cart */}
+          <div className="mt-7">
+
             <button
-                type="button"
-                disabled={!isInStock}
-                onClick={() => {
-                    addToCart(product, quantity);
-                }}
-                className={`flex-1 rounded-lg px-6 py-3 font-semibold text-white transition ${
-                    isInStock
-                    ? "bg-blue-600 hover:bg-blue-700"
-                    : "cursor-not-allowed bg-gray-400"
-                }`}
-                >
-                {isInStock
-                    ? "Add to Cart"
-                    : "Out of Stock"}
+              type="button"
+              disabled={!isInStock}
+              onClick={handleAddToCart}
+              className={`w-full rounded-lg px-6 py-3 font-semibold text-white transition ${
+                !isInStock
+                  ? "cursor-not-allowed bg-gray-400"
+                  : addedToCart
+                    ? "bg-green-600"
+                    : "bg-blue-600 hover:bg-blue-700"
+              }`}
+            >
+              {!isInStock ? (
+                "Out of Stock"
+              ) : addedToCart ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span>✓</span>
+                  Added to Cart
+                </span>
+              ) : (
+                "Add to Cart"
+              )}
             </button>
 
           </div>
 
 
-          {/* Product benefits */}
+          {/* Benefits */}
           <div className="mt-8 grid grid-cols-2 gap-4 border-t border-gray-200 pt-7">
 
             <div>
@@ -310,30 +315,22 @@ export default function ProductDetails() {
       </div>
 
 
-      {/* =================================================
-          DESCRIPTION
-      ================================================== */}
+      {/* Description */}
       <section className="mt-16 border-t border-gray-200 pt-12">
 
         <h2 className="text-2xl font-bold text-gray-900">
           Product Description
         </h2>
 
-        <div className="mt-5 max-w-4xl text-gray-600">
-
-          <p className="whitespace-pre-line leading-8">
-            {product.description}
-          </p>
-
-        </div>
+        <p className="mt-5 max-w-4xl whitespace-pre-line leading-8 text-gray-600">
+          {product.description}
+        </p>
 
       </section>
 
 
-      {/* =================================================
-          SPECIFICATIONS
-      ================================================== */}
-      {specifications.length > 0 && (
+      {/* Specifications */}
+      {product.specifications?.length > 0 && (
         <section className="mt-14 border-t border-gray-200 pt-12">
 
           <h2 className="text-2xl font-bold text-gray-900">
@@ -342,7 +339,7 @@ export default function ProductDetails() {
 
           <div className="mt-6 max-w-4xl overflow-hidden rounded-xl border border-gray-200">
 
-            {specifications.map((spec, index) => (
+            {product.specifications.map((spec, index) => (
               <div
                 key={spec.id}
                 className={`grid grid-cols-2 ${
@@ -369,9 +366,7 @@ export default function ProductDetails() {
       )}
 
 
-      {/* =================================================
-          DELIVERY / PRODUCT INFORMATION
-      ================================================== */}
+      {/* Product Information */}
       <section className="mt-14 border-t border-gray-200 pt-12">
 
         <h2 className="text-2xl font-bold text-gray-900">
@@ -425,6 +420,32 @@ export default function ProductDetails() {
         </div>
 
       </section>
+
+
+      {/* SUCCESS TOAST */}
+      {addedToCart && (
+        <div className="fixed bottom-6 right-6 z-[100]">
+
+          <div className="flex min-w-[300px] items-center gap-3 rounded-xl bg-gray-900 px-5 py-4 text-white shadow-2xl">
+
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-green-500 font-bold">
+              ✓
+            </div>
+
+            <div>
+              <p className="font-semibold">
+                Added to cart
+              </p>
+
+              <p className="text-sm text-gray-300">
+                {quantity} × {product.name}
+              </p>
+            </div>
+
+          </div>
+
+        </div>
+      )}
 
     </section>
   );
