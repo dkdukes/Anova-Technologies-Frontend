@@ -38,6 +38,7 @@ export function CartProvider({ children }) {
           item.id === product.id
             ? {
                 ...item,
+                sku:product.sku,
                 quantity: Math.min(
                   item.quantity + quantity,
                   product.stock_quantity
@@ -51,6 +52,7 @@ export function CartProvider({ children }) {
         ...currentItems,
         {
           id: product.id,
+          sku: product.sku,
           name: product.name,
           slug: product.slug,
           price: Number(product.current_price),

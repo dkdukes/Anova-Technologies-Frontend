@@ -110,7 +110,7 @@ export default function Cart() {
                   </Link>
 
                   <p className="mt-1 text-sm text-gray-500">
-                    SKU: {item.id}
+                    SKU: {item.sku}
                   </p>
 
                   <p className="mt-3 text-lg font-bold text-gray-900">
