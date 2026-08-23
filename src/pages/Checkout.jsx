@@ -4,6 +4,56 @@ import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import api from "../services/api";
 
+const counties = [
+  "Baringo",
+  "Bomet",
+  "Bungoma",
+  "Busia",
+  "Elgeyo-Marakwet",
+  "Embu",
+  "Garissa",
+  "Homa Bay",
+  "Isiolo",
+  "Kajiado",
+  "Kakamega",
+  "Kericho",
+  "Kiambu",
+  "Kilifi",
+  "Kirinyaga",
+  "Kisii",
+  "Kisumu",
+  "Kitui",
+  "Kwale",
+  "Laikipia",
+  "Lamu",
+  "Machakos",
+  "Makueni",
+  "Mandera",
+  "Marsabit",
+  "Meru",
+  "Migori",
+  "Mombasa",
+  "Murang'a",
+  "Nairobi",
+  "Nakuru",
+  "Nandi",
+  "Narok",
+  "Nyamira",
+  "Nyandarua",
+  "Nyeri",
+  "Samburu",
+  "Siaya",
+  "Taita-Taveta",
+  "Tana River",
+  "Tharaka-Nithi",
+  "Trans Nzoia",
+  "Turkana",
+  "Uasin Gishu",
+  "Vihiga",
+  "Wajir",
+  "West Pokot",
+];
+
 export default function Checkout() {
   const {
     cartItems,
@@ -130,12 +180,8 @@ export default function Checkout() {
         return "";
 
       case "county":
-        if (!trimmedValue) {
-          return "County is required.";
-        }
-
-        if (trimmedValue.length < 2) {
-          return "Please enter a valid county.";
+        if (!value) {
+            return "Please select your county.";
         }
 
         return "";
@@ -663,18 +709,34 @@ export default function Checkout() {
                     County
                   </label>
 
-                  <input
+                  <select
                     id="county"
-                    type="text"
                     name="county"
                     value={form.county}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    placeholder="Nairobi"
                     autoComplete="address-level1"
                     aria-invalid={!!errors.county}
+                    aria-describedby={
+                        errors.county
+                        ? "county-error"
+                        : undefined
+                    }
                     className={inputClass("county")}
-                  />
+                    >
+                    <option value="">
+                        Select your county
+                    </option>
+
+                    {counties.map((county) => (
+                        <option
+                        key={county}
+                        value={county}
+                        >
+                        {county}
+                        </option>
+                    ))}
+                    </select>
 
                   <FieldError name="county" />
 
