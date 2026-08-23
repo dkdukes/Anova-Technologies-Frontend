@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import { useCart } from "../context/CartContext";
 import api from "../services/api";
 
 export default function Checkout() {
-  const navigate = useNavigate();
-
   const {
     cartItems,
     totalItems,
@@ -24,9 +22,41 @@ export default function Checkout() {
     payment_method: "mpesa",
   });
 
+  const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [order, setOrder] = useState(null);
+
+  // -----------------------------------------
+  // Normalize Kenyan phone number
+  // -----------------------------------------
+
+  const normalizePhoneNumber = (phone) => {
+    let value = phone.trim();
+
+    value = value.replace(/[\s\-()]/g, "");
+
+    // 0712345678 -> 254712345678
+    if (/^0[17]\d{8}$/.test(value)) {
+      return `254${value.slice(1)}`;
+    }
+
+    // 254712345678
+    if (/^254[17]\d{8}$/.test(value)) {
+      return value;
+    }
+
+    // +254712345678 -> 254712345678
+    if (/^\+254[17]\d{8}$/.test(value)) {
+      return value.slice(1);
+    }
+
+    return null;
+  };
+
+  // -----------------------------------------
+  // Handle input changes
+  // -----------------------------------------
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -35,15 +65,216 @@ export default function Checkout() {
       ...current,
       [name]: value,
     }));
+
+    // Clear field error while typing
+    if (errors[name]) {
+      setErrors((current) => ({
+        ...current,
+        [name]: "",
+      }));
+    }
+
+    // Clear server error
+    if (serverError) {
+      setServerError("");
+    }
   };
+
+  // -----------------------------------------
+  // Validate individual field
+  // -----------------------------------------
+
+  const validateField = (name, value) => {
+    const trimmedValue = value.trim();
+
+    switch (name) {
+      case "full_name":
+        if (!trimmedValue) {
+          return "Full name is required.";
+        }
+
+        if (trimmedValue.length < 2) {
+          return "Please enter your full name.";
+        }
+
+        if (!/^[a-zA-ZÀ-ÿ\s'-]+$/.test(trimmedValue)) {
+          return "Please enter a valid name.";
+        }
+
+        return "";
+
+      case "email":
+        if (!trimmedValue) {
+          return "Email address is required.";
+        }
+
+        if (
+          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+            trimmedValue
+          )
+        ) {
+          return "Enter a valid email address.";
+        }
+
+        return "";
+
+      case "phone":
+        if (!trimmedValue) {
+          return "Phone number is required.";
+        }
+
+        if (!normalizePhoneNumber(trimmedValue)) {
+          return "Enter a valid Kenyan phone number, e.g. 0712345678.";
+        }
+
+        return "";
+
+      case "county":
+        if (!trimmedValue) {
+          return "County is required.";
+        }
+
+        if (trimmedValue.length < 2) {
+          return "Please enter a valid county.";
+        }
+
+        return "";
+
+      case "town":
+        if (!trimmedValue) {
+          return "Town or city is required.";
+        }
+
+        if (trimmedValue.length < 2) {
+          return "Please enter a valid town or city.";
+        }
+
+        return "";
+
+      case "address":
+        if (!trimmedValue) {
+          return "Delivery address is required.";
+        }
+
+        if (trimmedValue.length < 5) {
+          return "Please enter a more complete delivery address.";
+        }
+
+        return "";
+
+      case "payment_method":
+        if (!value) {
+          return "Please select a payment method.";
+        }
+
+        return "";
+
+      default:
+        return "";
+    }
+  };
+
+  // -----------------------------------------
+  // Validate field on blur
+  // -----------------------------------------
+
+  const handleBlur = (event) => {
+    const { name, value } = event.target;
+
+    const fieldError = validateField(
+      name,
+      value
+    );
+
+    if (fieldError) {
+      setErrors((current) => ({
+        ...current,
+        [name]: fieldError,
+      }));
+    }
+  };
+
+  // -----------------------------------------
+  // Validate entire form
+  // -----------------------------------------
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    const fields = [
+      "full_name",
+      "email",
+      "phone",
+      "county",
+      "town",
+      "address",
+      "payment_method",
+    ];
+
+    fields.forEach((field) => {
+      const error = validateField(
+        field,
+        form[field]
+      );
+
+      if (error) {
+        newErrors[field] = error;
+      }
+    });
+
+    setErrors(newErrors);
+
+    return newErrors;
+  };
+
+  // -----------------------------------------
+  // Submit order
+  // -----------------------------------------
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    setError("");
+    setServerError("");
 
+    // Check cart
     if (cartItems.length === 0) {
-      setError("Your cart is empty.");
+      setServerError("Your cart is empty.");
+      return;
+    }
+
+    // Validate form
+    const validationErrors = validateForm();
+
+    if (Object.keys(validationErrors).length > 0) {
+      const firstErrorField =
+        Object.keys(validationErrors)[0];
+
+      setTimeout(() => {
+        document
+          .getElementById(firstErrorField)
+          ?.focus();
+      }, 0);
+
+      return;
+    }
+
+    // Normalize phone
+    const normalizedPhone =
+      normalizePhoneNumber(form.phone);
+
+    if (!normalizedPhone) {
+      setErrors((current) => ({
+        ...current,
+        phone:
+          "Enter a valid Kenyan phone number, e.g. 0712345678.",
+      }));
+
+      setTimeout(() => {
+        document
+          .getElementById("phone")
+          ?.focus();
+      }, 0);
+
       return;
     }
 
@@ -52,18 +283,19 @@ export default function Checkout() {
 
       const payload = {
         customer: {
-          full_name: form.full_name,
-          email: form.email,
-          phone: form.phone,
+          full_name: form.full_name.trim(),
+          email: form.email.trim(),
+          phone: normalizedPhone,
         },
 
         delivery: {
-          county: form.county,
-          town: form.town,
-          address: form.address,
+          county: form.county.trim(),
+          town: form.town.trim(),
+          address: form.address.trim(),
         },
 
-        payment_method: form.payment_method,
+        payment_method:
+          form.payment_method,
 
         items: cartItems.map((item) => ({
           product_id: item.id,
@@ -78,33 +310,84 @@ export default function Checkout() {
 
       setOrder(response.data);
 
-      /*
-       * We only clear the cart after Django
-       * successfully creates the order.
-       */
+      // Clear cart only after successful order
       clearCart();
 
     } catch (err) {
-      console.error("Checkout error:", err);
+      console.error(
+        "Checkout error:",
+        err
+      );
 
       const backendError =
         err.response?.data?.error ||
         "Unable to place your order. Please try again.";
 
-      setError(backendError);
+      setServerError(backendError);
+
+      setTimeout(() => {
+        document
+          .getElementById("server-error")
+          ?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
+      }, 50);
+
     } finally {
       setLoading(false);
     }
   };
 
-  /* Successful order */
+  // -----------------------------------------
+  // Field error component
+  // -----------------------------------------
+
+  const FieldError = ({ name }) => {
+    if (!errors[name]) {
+      return null;
+    }
+
+    return (
+      <p
+        id={`${name}-error`}
+        role="alert"
+        className="mt-2 flex items-start gap-2 text-sm font-medium text-red-600"
+      >
+        <span aria-hidden="true">
+          ⚠
+        </span>
+
+        <span>
+          {errors[name]}
+        </span>
+      </p>
+    );
+  };
+
+  // -----------------------------------------
+  // Input class helper
+  // -----------------------------------------
+
+  const inputClass = (name) => {
+    return `mt-2 w-full rounded-lg border px-4 py-3 outline-none transition focus:ring-2 ${
+      errors[name]
+        ? "border-red-500 bg-red-50/30 focus:border-red-500 focus:ring-red-100"
+        : "border-gray-300 focus:border-blue-600 focus:ring-blue-100"
+    }`;
+  };
+
+  // -----------------------------------------
+  // Successful order
+  // -----------------------------------------
+
   if (order) {
     return (
       <section className="mx-auto max-w-3xl px-6 py-20">
 
         <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm sm:p-12">
 
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-3xl text-green-600">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-3xl font-bold text-green-600">
             ✓
           </div>
 
@@ -113,12 +396,13 @@ export default function Checkout() {
           </h1>
 
           <p className="mt-3 text-gray-600">
-            Thank you for shopping with Anova Technologies.
+            Thank you for shopping with
+            Anova Technologies.
           </p>
 
           <div className="mx-auto mt-8 max-w-md rounded-xl bg-gray-50 p-5 text-left">
 
-            <div className="flex justify-between">
+            <div className="flex justify-between gap-4">
               <span className="text-gray-500">
                 Order number
               </span>
@@ -128,18 +412,20 @@ export default function Checkout() {
               </span>
             </div>
 
-            <div className="mt-3 flex justify-between">
+            <div className="mt-3 flex justify-between gap-4">
               <span className="text-gray-500">
                 Total
               </span>
 
               <span className="font-bold text-gray-900">
                 KSh{" "}
-                {Number(order.total).toLocaleString()}
+                {Number(
+                  order.total
+                ).toLocaleString()}
               </span>
             </div>
 
-            <div className="mt-3 flex justify-between">
+            <div className="mt-3 flex justify-between gap-4">
               <span className="text-gray-500">
                 Payment
               </span>
@@ -159,9 +445,11 @@ export default function Checkout() {
               </h2>
 
               <p className="mt-2 text-sm leading-6 text-gray-600">
-                Your order has been created and is awaiting
-                payment. We'll initiate the M-Pesa payment
-                process in the next step.
+                Your order has been created
+                and is awaiting payment.
+                We'll initiate the M-Pesa
+                payment process in the next
+                step.
               </p>
 
             </div>
@@ -191,8 +479,10 @@ export default function Checkout() {
     );
   }
 
+  // -----------------------------------------
+  // Empty cart
+  // -----------------------------------------
 
-  /* Empty cart */
   if (cartItems.length === 0) {
     return (
       <section className="mx-auto max-w-2xl px-6 py-20 text-center">
@@ -220,6 +510,9 @@ export default function Checkout() {
     );
   }
 
+  // -----------------------------------------
+  // Checkout page
+  // -----------------------------------------
 
   return (
     <section className="mx-auto max-w-7xl px-6 py-10">
@@ -241,15 +534,17 @@ export default function Checkout() {
 
       </div>
 
-
-      <form onSubmit={handleSubmit}>
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+      >
 
         <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
 
-          {/* LEFT */}
+          {/* LEFT SIDE */}
           <div className="space-y-8">
 
-            {/* Customer information */}
+            {/* Contact Information */}
             <div className="rounded-2xl border border-gray-200 bg-white p-6">
 
               <h2 className="text-xl font-bold text-gray-900">
@@ -258,62 +553,90 @@ export default function Checkout() {
 
               <div className="mt-6 grid gap-5 sm:grid-cols-2">
 
-                {/* Name */}
+                {/* Full Name */}
                 <div className="sm:col-span-2">
 
-                  <label className="text-sm font-semibold text-gray-700">
+                  <label
+                    htmlFor="full_name"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     Full Name
                   </label>
 
                   <input
+                    id="full_name"
                     type="text"
                     name="full_name"
                     value={form.full_name}
                     onChange={handleChange}
+                    onBlur={handleBlur}
                     placeholder="John Doe"
-                    required
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                    autoComplete="name"
+                    aria-invalid={!!errors.full_name}
+                    className={inputClass("full_name")}
                   />
 
-                </div>
+                  <FieldError name="full_name" />
 
+                </div>
 
                 {/* Email */}
                 <div>
 
-                  <label className="text-sm font-semibold text-gray-700">
+                  <label
+                    htmlFor="email"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     Email Address
                   </label>
 
                   <input
+                    id="email"
                     type="email"
                     name="email"
                     value={form.email}
                     onChange={handleChange}
+                    onBlur={handleBlur}
                     placeholder="john@example.com"
-                    required
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                    autoComplete="email"
+                    aria-invalid={!!errors.email}
+                    className={inputClass("email")}
                   />
 
-                </div>
+                  <FieldError name="email" />
 
+                </div>
 
                 {/* Phone */}
                 <div>
 
-                  <label className="text-sm font-semibold text-gray-700">
+                  <label
+                    htmlFor="phone"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     Phone Number
                   </label>
 
                   <input
+                    id="phone"
                     type="tel"
                     name="phone"
                     value={form.phone}
                     onChange={handleChange}
+                    onBlur={handleBlur}
                     placeholder="0712345678"
-                    required
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                    autoComplete="tel"
+                    inputMode="tel"
+                    aria-invalid={!!errors.phone}
+                    className={inputClass("phone")}
                   />
+
+                  <p className="mt-2 text-xs text-gray-500">
+                    Example: 0712345678 or
+                    +254712345678
+                  </p>
+
+                  <FieldError name="phone" />
 
                 </div>
 
@@ -321,8 +644,7 @@ export default function Checkout() {
 
             </div>
 
-
-            {/* Delivery */}
+            {/* Delivery Information */}
             <div className="rounded-2xl border border-gray-200 bg-white p-6">
 
               <h2 className="text-xl font-bold text-gray-900">
@@ -334,66 +656,87 @@ export default function Checkout() {
                 {/* County */}
                 <div>
 
-                  <label className="text-sm font-semibold text-gray-700">
+                  <label
+                    htmlFor="county"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     County
                   </label>
 
                   <input
+                    id="county"
                     type="text"
                     name="county"
                     value={form.county}
                     onChange={handleChange}
+                    onBlur={handleBlur}
                     placeholder="Nairobi"
-                    required
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                    autoComplete="address-level1"
+                    aria-invalid={!!errors.county}
+                    className={inputClass("county")}
                   />
 
-                </div>
+                  <FieldError name="county" />
 
+                </div>
 
                 {/* Town */}
                 <div>
 
-                  <label className="text-sm font-semibold text-gray-700">
+                  <label
+                    htmlFor="town"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     Town / City
                   </label>
 
                   <input
+                    id="town"
                     type="text"
                     name="town"
                     value={form.town}
                     onChange={handleChange}
+                    onBlur={handleBlur}
                     placeholder="Nairobi"
-                    required
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                    autoComplete="address-level2"
+                    aria-invalid={!!errors.town}
+                    className={inputClass("town")}
                   />
 
-                </div>
+                  <FieldError name="town" />
 
+                </div>
 
                 {/* Address */}
                 <div className="sm:col-span-2">
 
-                  <label className="text-sm font-semibold text-gray-700">
+                  <label
+                    htmlFor="address"
+                    className="text-sm font-semibold text-gray-700"
+                  >
                     Delivery Address
                   </label>
 
                   <textarea
+                    id="address"
                     name="address"
                     value={form.address}
                     onChange={handleChange}
+                    onBlur={handleBlur}
                     placeholder="Building, street, area, landmark..."
                     rows="4"
-                    required
-                    className="mt-2 w-full resize-none rounded-lg border border-gray-300 px-4 py-3 outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                    autoComplete="street-address"
+                    aria-invalid={!!errors.address}
+                    className={inputClass("address")}
                   />
+
+                  <FieldError name="address" />
 
                 </div>
 
               </div>
 
             </div>
-
 
             {/* Payment */}
             <div className="rounded-2xl border border-gray-200 bg-white p-6">
@@ -424,6 +767,7 @@ export default function Checkout() {
                   />
 
                   <div>
+
                     <p className="font-semibold text-gray-900">
                       M-Pesa
                     </p>
@@ -431,10 +775,10 @@ export default function Checkout() {
                     <p className="text-sm text-gray-500">
                       Pay securely using M-Pesa.
                     </p>
+
                   </div>
 
                 </label>
-
 
                 {/* Card */}
                 <label
@@ -456,6 +800,7 @@ export default function Checkout() {
                   />
 
                   <div>
+
                     <p className="font-semibold text-gray-900">
                       Card
                     </p>
@@ -463,12 +808,12 @@ export default function Checkout() {
                     <p className="text-sm text-gray-500">
                       Card payment will be available soon.
                     </p>
+
                   </div>
 
                 </label>
 
-
-                {/* COD */}
+                {/* Cash on Delivery */}
                 <label
                   className={`flex cursor-pointer items-center gap-4 rounded-xl border p-4 transition ${
                     form.payment_method === "cod"
@@ -488,6 +833,7 @@ export default function Checkout() {
                   />
 
                   <div>
+
                     <p className="font-semibold text-gray-900">
                       Cash on Delivery
                     </p>
@@ -495,32 +841,56 @@ export default function Checkout() {
                     <p className="text-sm text-gray-500">
                       Pay when your order is delivered.
                     </p>
+
                   </div>
 
                 </label>
 
               </div>
 
+              <FieldError name="payment_method" />
+
             </div>
 
+            {/* Server Error */}
+            {serverError && (
+              <div
+                id="server-error"
+                role="alert"
+                className="rounded-xl border border-red-200 bg-red-50 p-4"
+              >
 
-            {/* Error */}
-            {error && (
-              <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-700">
-                {error}
+                <div className="flex items-start gap-3">
+
+                  <span className="text-lg text-red-600">
+                    ⚠
+                  </span>
+
+                  <div>
+
+                    <p className="font-semibold text-red-800">
+                      Unable to place your order
+                    </p>
+
+                    <p className="mt-1 text-sm text-red-700">
+                      {serverError}
+                    </p>
+
+                  </div>
+
+                </div>
+
               </div>
             )}
 
           </div>
 
-
-          {/* RIGHT - SUMMARY */}
+          {/* RIGHT SIDE */}
           <aside className="h-fit rounded-2xl border border-gray-200 bg-white p-6 lg:sticky lg:top-24">
 
             <h2 className="text-xl font-bold text-gray-900">
               Order Summary
             </h2>
-
 
             {/* Products */}
             <div className="mt-6 space-y-4">
@@ -554,6 +924,10 @@ export default function Checkout() {
                     </p>
 
                     <p className="mt-1 text-xs text-gray-500">
+                      SKU: {item.sku}
+                    </p>
+
+                    <p className="mt-1 text-xs text-gray-500">
                       Qty: {item.quantity}
                     </p>
 
@@ -572,37 +946,27 @@ export default function Checkout() {
 
             </div>
 
-
             <div className="my-6 border-t border-gray-200" />
-
 
             {/* Totals */}
             <div className="space-y-4">
 
               <div className="flex justify-between text-gray-600">
-                <span>
-                  Items
-                </span>
-
-                <span>
-                  {totalItems}
-                </span>
+                <span>Items</span>
+                <span>{totalItems}</span>
               </div>
 
               <div className="flex justify-between text-gray-600">
-                <span>
-                  Subtotal
-                </span>
+                <span>Subtotal</span>
 
                 <span className="font-medium text-gray-900">
-                  KSh {totalPrice.toLocaleString()}
+                  KSh{" "}
+                  {totalPrice.toLocaleString()}
                 </span>
               </div>
 
               <div className="flex justify-between text-gray-600">
-                <span>
-                  Delivery
-                </span>
+                <span>Delivery</span>
 
                 <span className="font-medium text-gray-900">
                   KSh 300
@@ -611,10 +975,9 @@ export default function Checkout() {
 
             </div>
 
-
             <div className="my-6 border-t border-gray-200" />
 
-
+            {/* Total */}
             <div className="flex items-center justify-between">
 
               <span className="text-lg font-bold text-gray-900">
@@ -623,12 +986,14 @@ export default function Checkout() {
 
               <span className="text-2xl font-bold text-gray-900">
                 KSh{" "}
-                {(totalPrice + 300).toLocaleString()}
+                {(
+                  totalPrice + 300
+                ).toLocaleString()}
               </span>
 
             </div>
 
-
+            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
@@ -639,10 +1004,8 @@ export default function Checkout() {
                 : "Place Order"}
             </button>
 
-
             <p className="mt-4 text-center text-xs leading-5 text-gray-500">
-              By placing your order, you agree to Anova
-              Technologies' terms and conditions.
+              Your payment information is securely handled.
             </p>
 
           </aside>
