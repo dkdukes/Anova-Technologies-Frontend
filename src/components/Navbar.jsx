@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 
 export default function Navbar() {
   const [search, setSearch] = useState("");
   const [mobileMenu, setMobileMenu] = useState(false);
+  const {totalItems} = useCart();
 
   const navigate = useNavigate();
 
@@ -181,9 +183,11 @@ export default function Navbar() {
             </svg>
 
             {/* Cart count - will connect to CartContext later */}
-            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1 text-xs font-bold text-white">
-              0
-            </span>
+            {totalItems > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1 text-xs font-bold text-white">
+                {totalItems}
+              </span>
+            )}
           </Link>
 
           {/* Mobile Menu */}

@@ -1,3 +1,6 @@
+import ProductGallery from "../components/ProductGallery";
+import QuantitySelector from "../components/QuantitySelector";
+import { useCart } from "../context/CartContext";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
@@ -5,6 +8,8 @@ import api from "../services/api";
 
 export default function ProductDetails() {
   const { slug } = useParams();
+  const {addToCart}= useCart();
+  const {quantity,setQuantity}=useState(1);
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -126,32 +131,7 @@ export default function ProductDetails() {
         ================================================== */}
         <div>
 
-          <div className="flex min-h-[500px] items-center justify-center rounded-2xl border border-gray-200 bg-white p-8">
-
-            {hasImages ? (
-              <img
-                src={product.images[0].image_url}
-                alt={
-                  product.images[0].alt_text ||
-                  product.name
-                }
-                className="max-h-[460px] w-full object-contain"
-              />
-            ) : (
-              <div className="text-center">
-
-                <div className="text-9xl">
-                  💻
-                </div>
-
-                <p className="mt-5 text-sm text-gray-400">
-                  Product image coming soon
-                </p>
-
-              </div>
-            )}
-
-          </div>
+          <ProductGallery product={product}/>
 
         </div>
 
@@ -272,17 +252,29 @@ export default function ProductDetails() {
           {/* Add to cart */}
           <div className="mt-7 flex gap-3">
 
+            {isInStock && (
+                <div className="mt-6">
+                    <QuantitySelector
+                    stock={product.stock_quantity}
+                    onChange={setQuantity}
+                    />
+                </div>
+            )}
             <button
-              disabled={!isInStock}
-              className={`flex-1 rounded-lg px-6 py-3 font-semibold text-white transition ${
-                isInStock
-                  ? "bg-blue-600 hover:bg-blue-700"
-                  : "cursor-not-allowed bg-gray-400"
-              }`}
-            >
-              {isInStock
-                ? "Add to Cart"
-                : "Out of Stock"}
+                type="button"
+                disabled={!isInStock}
+                onClick={() => {
+                    addToCart(product, quantity);
+                }}
+                className={`flex-1 rounded-lg px-6 py-3 font-semibold text-white transition ${
+                    isInStock
+                    ? "bg-blue-600 hover:bg-blue-700"
+                    : "cursor-not-allowed bg-gray-400"
+                }`}
+                >
+                {isInStock
+                    ? "Add to Cart"
+                    : "Out of Stock"}
             </button>
 
           </div>
