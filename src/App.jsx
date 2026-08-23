@@ -3,6 +3,7 @@ import MainLayout from "./layouts/MainLayout";
 import Shop from "./pages/Shop";
 import ProductDetails from "./pages/ProductDetails";
 import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout";
 
 import Home from "./pages/Home";
 
@@ -56,6 +57,11 @@ export default function App() {
           <Route 
             path="/cart"
             element={<Cart/>}
+          />
+
+          <Route
+            path="/checkout"
+            element={<Checkout/>}
           />
 
         </Route>
