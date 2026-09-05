@@ -21,6 +21,7 @@ import Brands from "./pages/Admin/Brands";
 import BrandDetails from "./pages/Admin/BrandDetails";
 import AdminProductDetails from "./pages/Admin/AdminProductDetails";
 import EditProduct from "./pages/Admin/EditProduct";
+import Settings from "./pages/Admin/Settings";
 
 
 function Login() {
@@ -111,6 +112,8 @@ export default function App() {
            <Route path="brands" element={<Brands />} />
 
            <Route path="brands/:id" element={<BrandDetails />} />
+           
+           <Route path="settings" element={<Settings />} />
 
         </Route>
 

@@ -1,81 +1,85 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import AdminSidebar from "../components/AdminSidebar";
 
 function AdminLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    return (
-        <div className="min-h-screen bg-gray-50">
+    const [darkMode, setDarkMode] = useState(() => {
+        return localStorage.getItem("admin-dark-mode") === "true";
+    });
 
-            {/* Sidebar */}
+    useEffect(() => {
+        localStorage.setItem(
+            "admin-dark-mode",
+            darkMode
+        );
+
+        if (darkMode) {
+            document.documentElement.classList.add("dark");
+        } else {
+            document.documentElement.classList.remove("dark");
+        }
+    }, [darkMode]);
+
+    const toggleDarkMode = () => {
+        setDarkMode((prev) => !prev);
+    };
+
+    return (
+        <div
+            className={`min-h-screen transition-colors duration-300 ${
+                darkMode
+                    ? "bg-gray-950 text-white"
+                    : "bg-gray-50 text-gray-900"
+            }`}
+        >
             <AdminSidebar
                 open={sidebarOpen}
                 onClose={() => setSidebarOpen(false)}
+                darkMode={darkMode}
+                toggleDarkMode={toggleDarkMode}
             />
 
             {/* Main content */}
-            <div className="lg:pl-64">
-
-                {/* Top bar */}
-                <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-gray-200 bg-white px-4 sm:px-6">
-
-                    {/* Mobile menu */}
+            <div className="lg:ml-64">
+                {/* Mobile header */}
+                <header
+                    className={`flex h-16 items-center border-b px-4 lg:hidden ${
+                        darkMode
+                            ? "border-gray-800 bg-gray-900"
+                            : "border-gray-200 bg-white"
+                    }`}
+                >
                     <button
+                        type="button"
                         onClick={() => setSidebarOpen(true)}
-                        className="rounded-lg border border-gray-200 px-3 py-2 text-xl lg:hidden"
+                        className={`text-2xl ${
+                            darkMode
+                                ? "text-white"
+                                : "text-gray-900"
+                        }`}
                     >
                         ☰
                     </button>
 
-                    {/* Page title */}
-                    <div className="hidden lg:block">
-                        <p className="text-sm text-gray-500">
-                            Admin Center
-                        </p>
-
-                        <h2 className="text-lg font-semibold text-gray-900">
+                    <div className="ml-4">
+                        <h1 className="font-bold">
                             Anova Technologies
-                        </h2>
-                    </div>
-
-                    {/* Right side */}
-                    <div className="ml-auto flex items-center gap-4">
-
-                        {/* Notifications */}
-                        <button
-                            className="relative rounded-lg p-2 text-xl text-gray-600 hover:bg-gray-100"
-                            title="Notifications"
-                        >
-                            🔔
-
-                            <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />
-                        </button>
-
-                        {/* Admin profile */}
-                        <div className="hidden items-center gap-3 sm:flex">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-900 font-semibold text-white">
-                                A
-                            </div>
-
-                            <div>
-                                <p className="text-sm font-semibold text-gray-900">
-                                    Administrator
-                                </p>
-
-                                <p className="text-xs text-gray-500">
-                                    Admin
-                                </p>
-                            </div>
-                        </div>
+                        </h1>
                     </div>
                 </header>
 
-                {/* Page */}
-                <main className="p-4 sm:p-6 lg:p-8">
+                {/* Page content */}
+                <main
+                    className={`min-h-[calc(100vh-4rem)] p-4 transition-colors duration-300 sm:p-6 lg:p-8 ${
+                        darkMode
+                            ? "bg-gray-950"
+                            : "bg-gray-50"
+                    }`}
+                >
                     <Outlet />
                 </main>
-
             </div>
         </div>
     );
