@@ -1,224 +1,304 @@
-const stats = [
-  {
-    title: "Total Orders",
-    value: "0",
-    icon: "📦",
-    description: "All orders",
-  },
-  {
-    title: "Revenue",
-    value: "KSh 0",
-    icon: "💰",
-    description: "Paid orders",
-  },
-  {
-    title: "Products",
-    value: "0",
-    icon: "🛍️",
-    description: "Active products",
-  },
-  {
-    title: "Low Stock",
-    value: "0",
-    icon: "⚠️",
-    description: "Need attention",
-  },
-];
+import { useEffect, useState } from "react";
+import api from "../../api";
 
-export default function AdminDashboard() {
-  return (
-    <div>
+function AdminDashboard() {
+    const [stats, setStats] = useState({
+        total_products: 0,
+        active_products: 0,
+        draft_products: 0,
+        low_stock_products: 0,
+        total_stock: 0,
+    });
 
-      {/* Header */}
-      <div className="mb-8">
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-        <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">
-          Overview
-        </p>
+    useEffect(() => {
+        const fetchDashboardStats = async () => {
+            try {
+                setLoading(true);
 
-        <h2 className="mt-2 text-3xl font-bold text-gray-900">
-          Dashboard
-        </h2>
+                const response = await api.get(
+                    "admin/dashboard/stats/"
+                );
 
-        <p className="mt-2 text-gray-500">
-          Manage your Anova Technologies store.
-        </p>
+                setStats(response.data);
+                setError("");
+            } catch (err) {
+                console.error("Dashboard stats error:", err);
 
-      </div>
+                setError(
+                    "Unable to load dashboard statistics."
+                );
+            } finally {
+                setLoading(false);
+            }
+        };
 
-      {/* Stats */}
-      <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+        fetchDashboardStats();
+    }, []);
 
-        {stats.map((stat) => (
-          <div
-            key={stat.title}
-            className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm"
-          >
+    const statCards = [
+        {
+            title: "Total Products",
+            value: stats.total_products,
+            description: "All products",
+            icon: "📦",
+        },
+        {
+            title: "Active Products",
+            value: stats.active_products,
+            description: "Currently published",
+            icon: "🟢",
+        },
+        {
+            title: "Draft Products",
+            value: stats.draft_products,
+            description: "Not published",
+            icon: "📝",
+        },
+        {
+            title: "Low Stock",
+            value: stats.low_stock_products,
+            description: "Need attention",
+            icon: "⚠️",
+        },
+    ];
 
-            <div className="flex items-start justify-between">
+    return (
+        <div className="space-y-8">
 
-              <div>
-                <p className="text-sm font-medium text-gray-500">
-                  {stat.title}
-                </p>
-
-                <p className="mt-3 text-2xl font-bold text-gray-900">
-                  {stat.value}
-                </p>
-              </div>
-
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-xl">
-                {stat.icon}
-              </div>
-
-            </div>
-
-            <p className="mt-4 text-xs text-gray-500">
-              {stat.description}
-            </p>
-
-          </div>
-        ))}
-
-      </div>
-
-      {/* Main dashboard */}
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
-
-        {/* Recent Orders */}
-        <div className="rounded-2xl border border-gray-200 bg-white">
-
-          <div className="flex items-center justify-between border-b border-gray-200 p-6">
-
+            {/* Header */}
             <div>
-              <h3 className="font-bold text-gray-900">
-                Recent Orders
-              </h3>
+                <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">
+                    Dashboard
+                </h1>
 
-              <p className="mt-1 text-sm text-gray-500">
-                Latest customer orders
-              </p>
+                <p className="mt-1 text-sm text-gray-500">
+                    Welcome to your Anova Technologies admin center.
+                </p>
             </div>
 
-            <span className="text-2xl">
-              📦
-            </span>
+            {/* Error */}
+            {error && (
+                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {error}
+                </div>
+            )}
 
-          </div>
+            {/* Statistics */}
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-4">
 
-          <div className="p-6">
+                {statCards.map((stat) => (
+                    <div
+                        key={stat.title}
+                        className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
+                    >
+                        <div className="flex items-start justify-between">
 
-            <div className="rounded-xl bg-gray-50 p-8 text-center">
+                            <div>
+                                <p className="text-sm font-medium text-gray-500">
+                                    {stat.title}
+                                </p>
 
-              <div className="text-4xl">
-                📭
-              </div>
+                                {loading ? (
+                                    <div className="mt-3 h-8 w-20 animate-pulse rounded bg-gray-200" />
+                                ) : (
+                                    <p className="mt-2 text-3xl font-bold text-gray-900">
+                                        {stat.value}
+                                    </p>
+                                )}
 
-              <p className="mt-3 font-semibold text-gray-900">
-                No orders yet
-              </p>
+                                <p className="mt-2 text-xs text-gray-400">
+                                    {stat.description}
+                                </p>
+                            </div>
 
-              <p className="mt-1 text-sm text-gray-500">
-                New orders will appear here.
-              </p>
+                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 text-xl">
+                                {stat.icon}
+                            </div>
+
+                        </div>
+                    </div>
+                ))}
 
             </div>
 
-          </div>
+            {/* Inventory Overview */}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+
+                {/* Stock */}
+                <div className="rounded-xl border border-gray-200 bg-white p-6">
+
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h2 className="font-semibold text-gray-900">
+                                Inventory Overview
+                            </h2>
+
+                            <p className="mt-1 text-sm text-gray-500">
+                                Current inventory status
+                            </p>
+                        </div>
+
+                        <span className="text-2xl">
+                            📊
+                        </span>
+                    </div>
+
+                    <div className="mt-6">
+
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-500">
+                                Total Stock
+                            </span>
+
+                            <span className="font-semibold text-gray-900">
+                                {loading ? "..." : stats.total_stock}
+                            </span>
+                        </div>
+
+                        <div className="mt-3 h-3 overflow-hidden rounded-full bg-gray-100">
+                            <div
+                                className="h-full rounded-full bg-gray-900 transition-all"
+                                style={{
+                                    width:
+                                        stats.total_stock > 0
+                                            ? "100%"
+                                            : "0%",
+                                }}
+                            />
+                        </div>
+
+                    </div>
+
+                </div>
+
+                {/* Product Status */}
+                <div className="rounded-xl border border-gray-200 bg-white p-6">
+
+                    <h2 className="font-semibold text-gray-900">
+                        Product Status
+                    </h2>
+
+                    <p className="mt-1 text-sm text-gray-500">
+                        Breakdown of your products
+                    </p>
+
+                    <div className="mt-6 space-y-4">
+
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-600">
+                                Active
+                            </span>
+
+                            <span className="font-semibold text-gray-900">
+                                {stats.active_products}
+                            </span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-600">
+                                Draft
+                            </span>
+
+                            <span className="font-semibold text-gray-900">
+                                {stats.draft_products}
+                            </span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-600">
+                                Low Stock
+                            </span>
+
+                            <span className="font-semibold text-gray-900">
+                                {stats.low_stock_products}
+                            </span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            {/* Quick Actions */}
+            <div className="rounded-xl border border-gray-200 bg-white p-6">
+
+                <h2 className="font-semibold text-gray-900">
+                    Quick Actions
+                </h2>
+
+                <p className="mt-1 text-sm text-gray-500">
+                    Manage your store quickly
+                </p>
+
+                <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+                    <a
+                        href="/admin/products/create"
+                        className="flex items-center gap-4 rounded-lg border border-gray-200 p-4 transition hover:bg-gray-50"
+                    >
+                        <span className="text-2xl">
+                            ➕
+                        </span>
+
+                        <div>
+                            <p className="text-sm font-semibold text-gray-900">
+                                Add Product
+                            </p>
+
+                            <p className="text-xs text-gray-500">
+                                Create a new product
+                            </p>
+                        </div>
+                    </a>
+
+                    <a
+                        href="/admin/products"
+                        className="flex items-center gap-4 rounded-lg border border-gray-200 p-4 transition hover:bg-gray-50"
+                    >
+                        <span className="text-2xl">
+                            📦
+                        </span>
+
+                        <div>
+                            <p className="text-sm font-semibold text-gray-900">
+                                Manage Products
+                            </p>
+
+                            <p className="text-xs text-gray-500">
+                                View your inventory
+                            </p>
+                        </div>
+                    </a>
+
+                    <a
+                        href="/admin/orders"
+                        className="flex items-center gap-4 rounded-lg border border-gray-200 p-4 transition hover:bg-gray-50"
+                    >
+                        <span className="text-2xl">
+                            🛒
+                        </span>
+
+                        <div>
+                            <p className="text-sm font-semibold text-gray-900">
+                                Manage Orders
+                            </p>
+
+                            <p className="text-xs text-gray-500">
+                                Process customer orders
+                            </p>
+                        </div>
+                    </a>
+
+                </div>
+
+            </div>
 
         </div>
-
-        {/* Quick Actions */}
-        <div className="rounded-2xl border border-gray-200 bg-white">
-
-          <div className="border-b border-gray-200 p-6">
-
-            <h3 className="font-bold text-gray-900">
-              Quick Actions
-            </h3>
-
-            <p className="mt-1 text-sm text-gray-500">
-              Common store management tasks
-            </p>
-
-          </div>
-
-          <div className="grid gap-3 p-6 sm:grid-cols-2">
-
-            <a
-              href="/admin/products/create"
-              className="rounded-xl border border-gray-200 p-4 transition hover:border-blue-200 hover:bg-blue-50"
-            >
-              <div className="text-2xl">
-                ➕
-              </div>
-
-              <p className="mt-3 font-semibold text-gray-900">
-                Add Product
-              </p>
-
-              <p className="mt-1 text-xs text-gray-500">
-                Create a new product
-              </p>
-            </a>
-
-            <a
-              href="/admin/orders"
-              className="rounded-xl border border-gray-200 p-4 transition hover:border-blue-200 hover:bg-blue-50"
-            >
-              <div className="text-2xl">
-                📦
-              </div>
-
-              <p className="mt-3 font-semibold text-gray-900">
-                Check Orders
-              </p>
-
-              <p className="mt-1 text-xs text-gray-500">
-                Manage customer orders
-              </p>
-            </a>
-
-            <a
-              href="/admin/revenue"
-              className="rounded-xl border border-gray-200 p-4 transition hover:border-blue-200 hover:bg-blue-50"
-            >
-              <div className="text-2xl">
-                💰
-              </div>
-
-              <p className="mt-3 font-semibold text-gray-900">
-                View Revenue
-              </p>
-
-              <p className="mt-1 text-xs text-gray-500">
-                Track store performance
-              </p>
-            </a>
-
-            <a
-              href="/admin/products"
-              className="rounded-xl border border-gray-200 p-4 transition hover:border-blue-200 hover:bg-blue-50"
-            >
-              <div className="text-2xl">
-                🛍️
-              </div>
-
-              <p className="mt-3 font-semibold text-gray-900">
-                Manage Products
-              </p>
-
-              <p className="mt-1 text-xs text-gray-500">
-                View your inventory
-              </p>
-            </a>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-  );
+    );
 }
+
+export default AdminDashboard;
