@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const menuItems = [
     {
@@ -40,6 +41,7 @@ const menuItems = [
         name: "Settings",
         path: "/admin/settings",
         icon: "⚙️",
+        adminOnly: true,
     },
 ];
 
@@ -49,6 +51,14 @@ function AdminSidebar({
     darkMode,
     toggleDarkMode,
 }) {
+    const { user } = useAuth();
+
+    const isAdmin = user?.role === "admin";
+
+    const visibleMenuItems = menuItems.filter(
+        (item) => !item.adminOnly || isAdmin
+    );
+
     return (
         <>
             {/* Mobile overlay */}
@@ -157,7 +167,7 @@ function AdminSidebar({
                     </p>
 
                     <div className="space-y-1">
-                        {menuItems.map((item) => (
+                        {visibleMenuItems.map((item) => (
                             <NavLink
                                 key={item.path}
                                 to={item.path}
@@ -226,12 +236,9 @@ function AdminSidebar({
                                 : "Switch to dark mode"
                         }
                     >
-                        {/* Label */}
                         <div className="flex items-center gap-3">
                             <span className="text-lg">
-                                {darkMode
-                                    ? "🌙"
-                                    : "☀️"}
+                                {darkMode ? "🌙" : "☀️"}
                             </span>
 
                             <span>
