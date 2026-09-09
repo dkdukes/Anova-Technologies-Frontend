@@ -1,10 +1,11 @@
 
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import api from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const [formData, setFormData] = useState({
         username: "",
@@ -30,28 +31,15 @@ export default function Login() {
         setLoading(true);
 
         try {
-            const response = await api.post(
-                "customers/auth/login/",
-                formData
+            // Login through AuthContext
+            const response = await login(
+                formData.username,
+                formData.password
             );
 
-            console.log("Login successful:", response.data);
+            const user = response.user;
 
-            const {
-                access,
-                refresh,
-                user,
-            } = response.data;
-
-            // Store authentication data
-            localStorage.setItem("accessToken", access);
-            localStorage.setItem("refreshToken", refresh);
-            localStorage.setItem(
-                "user",
-                JSON.stringify(user)
-            );
-
-            // Redirect according to role
+            // Redirect based on role
             if (
                 user.role === "admin" ||
                 user.role === "staff"
@@ -69,17 +57,20 @@ export default function Login() {
 
                 if (data.detail) {
                     setError(data.detail);
-                } else {
+                } else if (data.non_field_errors) {
                     setError(
-                        "Invalid username or password."
+                        Array.isArray(data.non_field_errors)
+                            ? data.non_field_errors.join(" ")
+                            : data.non_field_errors
                     );
+                } else {
+                    setError("Invalid username or password.");
                 }
             } else {
                 setError(
                     "Unable to connect to the server. Please try again."
                 );
             }
-
         } finally {
             setLoading(false);
         }
@@ -91,9 +82,7 @@ export default function Login() {
             <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
 
                 {/* Header */}
-
                 <div className="text-center mb-8">
-
                     <h1 className="text-3xl font-bold text-gray-900">
                         Welcome Back
                     </h1>
@@ -101,30 +90,23 @@ export default function Login() {
                     <p className="mt-2 text-gray-600">
                         Sign in to your Anova Technologies account
                     </p>
-
                 </div>
 
-
                 {/* Error */}
-
                 {error && (
                     <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                         {error}
                     </div>
                 )}
 
-
                 {/* Login Form */}
-
                 <form
                     onSubmit={handleSubmit}
                     className="space-y-5"
                 >
 
                     {/* Username */}
-
                     <div>
-
                         <label
                             htmlFor="username"
                             className="block text-sm font-medium text-gray-700 mb-1"
@@ -143,14 +125,10 @@ export default function Login() {
                             placeholder="Enter your username"
                             className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
                         />
-
                     </div>
 
-
                     {/* Password */}
-
                     <div>
-
                         <label
                             htmlFor="password"
                             className="block text-sm font-medium text-gray-700 mb-1"
@@ -169,12 +147,9 @@ export default function Login() {
                             placeholder="Enter your password"
                             className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
                         />
-
                     </div>
 
-
-                    {/* Submit */}
-
+                    {/* Login Button */}
                     <button
                         type="submit"
                         disabled={loading}
@@ -187,11 +162,8 @@ export default function Login() {
 
                 </form>
 
-
-                {/* Signup */}
-
+                {/* Signup Link */}
                 <div className="mt-6 text-center text-sm text-gray-600">
-
                     Don't have an account?{" "}
 
                     <Link
@@ -200,7 +172,6 @@ export default function Login() {
                     >
                         Create an account
                     </Link>
-
                 </div>
 
             </div>
@@ -208,3 +179,4 @@ export default function Login() {
         </div>
     );
 }
+
