@@ -1,11 +1,10 @@
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
 export default function Signup() {
     const navigate = useNavigate();
-    const { register } = useAuth();
 
     const [formData, setFormData] = useState({
         username: "",
@@ -22,10 +21,12 @@ export default function Signup() {
     const [loading, setLoading] = useState(false);
 
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
+        const { name, value } = e.target;
+
+        setFormData((previous) => ({
+            ...previous,
+            [name]: value,
+        }));
     };
 
     const handleSubmit = async (e) => {
@@ -36,7 +37,10 @@ export default function Signup() {
         setLoading(true);
 
         try {
-            await register(formData);
+            await api.post(
+                "customers/auth/register/",
+                formData
+            );
 
             setSuccess(
                 "Account created successfully! Redirecting to login..."
@@ -45,24 +49,33 @@ export default function Signup() {
             setTimeout(() => {
                 navigate("/login");
             }, 1500);
+
         } catch (err) {
             console.error("Registration error:", err);
 
             const data = err.response?.data;
 
             if (data) {
-                const messages = Object.values(data)
-                    .flat()
+                const messages = Object.entries(data)
+                    .map(([field, errors]) => {
+                        const message = Array.isArray(errors)
+                            ? errors.join(" ")
+                            : errors;
+
+                        return `${field}: ${message}`;
+                    })
                     .join(" ");
 
                 setError(
-                    messages || "Registration failed. Please try again."
+                    messages ||
+                    "Registration failed. Please try again."
                 );
             } else {
                 setError(
                     "Unable to connect to the server. Please try again."
                 );
             }
+
         } finally {
             setLoading(false);
         }
@@ -70,6 +83,7 @@ export default function Signup() {
 
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+
             <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-8">
 
                 <div className="text-center mb-8">
@@ -83,153 +97,187 @@ export default function Signup() {
                 </div>
 
                 {error && (
-                    <div className="mb-5 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                    <div className="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                         {error}
                     </div>
                 )}
 
                 {success && (
-                    <div className="mb-5 rounded-lg bg-green-50 border border-green-200 px-4 py-3 text-sm text-green-700">
+                    <div className="mb-5 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
                         {success}
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-5">
+                <form
+                    onSubmit={handleSubmit}
+                    className="space-y-5"
+                >
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label
+                                htmlFor="first_name"
+                                className="block text-sm font-medium text-gray-700 mb-1"
+                            >
                                 First Name
                             </label>
 
                             <input
+                                id="first_name"
                                 type="text"
                                 name="first_name"
                                 value={formData.first_name}
                                 onChange={handleChange}
                                 required
-                                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
                                 placeholder="John"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label
+                                htmlFor="last_name"
+                                className="block text-sm font-medium text-gray-700 mb-1"
+                            >
                                 Last Name
                             </label>
 
                             <input
+                                id="last_name"
                                 type="text"
                                 name="last_name"
                                 value={formData.last_name}
                                 onChange={handleChange}
                                 required
-                                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
                                 placeholder="Doe"
+                                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
                             />
                         </div>
 
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label
+                            htmlFor="username"
+                            className="block text-sm font-medium text-gray-700 mb-1"
+                        >
                             Username
                         </label>
 
                         <input
+                            id="username"
                             type="text"
                             name="username"
                             value={formData.username}
                             onChange={handleChange}
                             required
-                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
                             placeholder="johndoe"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label
+                            htmlFor="email"
+                            className="block text-sm font-medium text-gray-700 mb-1"
+                        >
                             Email
                         </label>
 
                         <input
+                            id="email"
                             type="email"
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
                             required
-                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
                             placeholder="john@example.com"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label
+                            htmlFor="phone"
+                            className="block text-sm font-medium text-gray-700 mb-1"
+                        >
                             Phone
                         </label>
 
                         <input
+                            id="phone"
                             type="tel"
                             name="phone"
                             value={formData.phone}
                             onChange={handleChange}
-                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
                             placeholder="0712345678"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label
+                            htmlFor="password"
+                            className="block text-sm font-medium text-gray-700 mb-1"
+                        >
                             Password
                         </label>
 
                         <input
+                            id="password"
                             type="password"
                             name="password"
                             value={formData.password}
                             onChange={handleChange}
                             required
                             minLength={8}
-                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
                             placeholder="Minimum 8 characters"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label
+                            htmlFor="password2"
+                            className="block text-sm font-medium text-gray-700 mb-1"
+                        >
                             Confirm Password
                         </label>
 
                         <input
+                            id="password2"
                             type="password"
                             name="password2"
                             value={formData.password2}
                             onChange={handleChange}
                             required
-                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
                             placeholder="Confirm your password"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
                         />
                     </div>
 
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full rounded-lg bg-gray-900 px-4 py-3 font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="w-full rounded-lg bg-gray-900 px-4 py-3 font-semibold text-white hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                        {loading ? "Creating Account..." : "Create Account"}
+                        {loading
+                            ? "Creating Account..."
+                            : "Create Account"}
                     </button>
 
                 </form>
 
                 <div className="mt-6 text-center text-sm text-gray-600">
                     Already have an account?{" "}
-                    <Link
-                        to="/login"
+                    <button
+                        type="button"
+                        onClick={() => navigate("/login")}
                         className="font-semibold text-gray-900 hover:underline"
                     >
                         Sign in
-                    </Link>
+                    </button>
                 </div>
 
             </div>
