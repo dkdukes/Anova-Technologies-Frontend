@@ -1,13 +1,59 @@
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
+
+const categoryMenus = {
+  Laptops: [
+    { name: "All Laptops", path: "/shop?category=laptops" },
+    { name: "Dell", path: "/shop?category=laptops&brand=dell" },
+    { name: "HP", path: "/shop?category=laptops&brand=hp" },
+    { name: "Lenovo", path: "/shop?category=laptops&brand=lenovo" },
+    { name: "Asus", path: "/shop?category=laptops&brand=asus" },
+    { name: "Acer", path: "/shop?category=laptops&brand=acer" },
+    { name: "Apple", path: "/shop?category=laptops&brand=apple" },
+  ],
+  Phones: [
+    { name: "All Phones", path: "/shop?category=phones" },
+    { name: "Samsung", path: "/shop?category=phones&brand=samsung" },
+    { name: "Apple", path: "/shop?category=phones&brand=apple" },
+    { name: "Xiaomi", path: "/shop?category=phones&brand=xiaomi" },
+    { name: "Tecno", path: "/shop?category=phones&brand=tecno" },
+    { name: "Infinix", path: "/shop?category=phones&brand=infinix" },
+    { name: "Google", path: "/shop?category=phones&brand=google" },
+  ],
+  Printers: [
+    { name: "All Printers", path: "/shop?category=printers" },
+    { name: "HP", path: "/shop?category=printers&brand=hp" },
+    { name: "Canon", path: "/shop?category=printers&brand=canon" },
+    { name: "Epson", path: "/shop?category=printers&brand=epson" },
+    { name: "Brother", path: "/shop?category=printers&brand=brother" },
+  ],
+  Accessories: [
+    { name: "All Accessories", path: "/shop?category=accessories" },
+    { name: "Computer Accessories", path: "/shop?category=accessories" },
+    { name: "Phone Accessories", path: "/shop?category=accessories" },
+    { name: "Keyboards", path: "/shop?search=keyboards" },
+    { name: "Mice", path: "/shop?search=mice" },
+    { name: "Storage", path: "/shop?search=storage" },
+    { name: "Chargers & Cables", path: "/shop?search=chargers" },
+  ],
+};
 
 export default function Navbar() {
   const [search, setSearch] = useState("");
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState(null);
   const {totalItems} = useCart();
+  const { user, logout, isAuthenticated } = useAuth();
 
   const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    setMobileMenu(false);
+    navigate("/login", { replace: true });
+  };
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -37,7 +83,7 @@ export default function Navbar() {
         <Link
           to="/"
           className="flex shrink-0 items-center gap-2"
-          onClick={() => setMobileMenu(false)}
+          onClick={() => { setMobileMenu(false); setOpenDropdown(null); }}
         >
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 font-bold text-white">
             A
@@ -95,11 +141,11 @@ export default function Navbar() {
         </form>
 
         {/* Desktop Navigation */}
-        <nav className="hidden items-center gap-6 lg:flex">
-
+        <nav className="hidden items-center gap-5 lg:flex">
           <NavLink
             to="/"
             className={navLinkClass}
+            onClick={() => setOpenDropdown(null)}
           >
             Home
           </NavLink>
@@ -107,58 +153,128 @@ export default function Navbar() {
           <NavLink
             to="/shop"
             className={navLinkClass}
+            onClick={() => setOpenDropdown(null)}
           >
             Shop
           </NavLink>
 
-          <NavLink
-            to="/shop?category=laptops"
-            className={navLinkClass}
-          >
-            Laptops
-          </NavLink>
+          {Object.entries(categoryMenus).map(([category, items]) => (
+            <div
+              key={category}
+              className="relative"
+              onMouseEnter={() => setOpenDropdown(category)}
+              onMouseLeave={() => setOpenDropdown(null)}
+            >
+              <button
+                type="button"
+                onClick={() =>
+                  setOpenDropdown(
+                    openDropdown === category ? null : category
+                  )
+                }
+                className={`${navLinkClass({
+                  isActive: false,
+                })} flex items-center gap-1`}
+                aria-expanded={openDropdown === category}
+              >
+                {category}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth="2"
+                  stroke="currentColor"
+                  className={`h-4 w-4 transition-transform ${
+                    openDropdown === category ? "rotate-180" : ""
+                  }`}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m6 9 6 6 6-6"
+                  />
+                </svg>
+              </button>
 
-          <NavLink
-            to="/shop?category=smartphones"
-            className={navLinkClass}
-          >
-            Phones
-          </NavLink>
-
-          <NavLink
-            to="/shop?category=printers"
-            className={navLinkClass}
-          >
-            Printers
-          </NavLink>
-
+              {openDropdown === category && (
+                <div className="absolute left-1/2 top-full z-50 w-56 -translate-x-1/2 pt-3">
+                  <div className="overflow-hidden rounded-xl border border-gray-200 bg-white py-2 shadow-xl">
+                    {items.map((item) => (
+                      <Link
+                        key={item.name}
+                        to={item.path}
+                        onClick={() => setOpenDropdown(null)}
+                        className="block px-4 py-2.5 text-sm text-gray-700 transition hover:bg-blue-50 hover:text-blue-600"
+                      >
+                        {item.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
         </nav>
 
         {/* Actions */}
         <div className="ml-auto flex shrink-0 items-center gap-2">
 
-          {/* Account */}
-          <Link
-            to="/login"
-            className="hidden rounded-lg p-2 text-gray-600 transition hover:bg-gray-100 hover:text-blue-600 sm:block"
-            aria-label="Account"
-            title="Account"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth="1.8"
-              stroke="currentColor"
-              className="h-6 w-6"
+          {/* Account / Logged-in User */}
+          {isAuthenticated && user ? (
+            <div className="hidden items-center gap-2 sm:flex">
+              {user.profile_image ? (
+                <img
+                  src={user.profile_image}
+                  alt={user.username}
+                  className="h-9 w-9 rounded-full object-cover"
+                />
+              ) : (
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
+                  {(user.first_name || user.username || "U")
+                    .charAt(0)
+                    .toUpperCase()}
+                </div>
+              )}
+
+              <div className="hidden xl:block">
+                <p className="text-xs text-gray-500">Welcome,</p>
+                <p className="max-w-28 truncate text-sm font-semibold text-gray-900">
+                  {user.first_name || user.username}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50"
+                title="Logout"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/login"
+              className="hidden rounded-lg p-2 text-gray-600 transition hover:bg-gray-100 hover:text-blue-600 sm:block"
+              aria-label="Account"
+              title="Login / Account"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 6.75a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.25a7.5 7.5 0 0 1 15 0"
-              />
-            </svg>
-          </Link>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth="1.8"
+                stroke="currentColor"
+                className="h-6 w-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M15.75 6.75a3.75 3.75 0 1 1-7.5 0M4.5 20.25a7.5 7.5 0 0 1 15 0"
+                />
+              </svg>
+            </Link>
+          )}
 
           {/* Cart */}
           <Link
@@ -281,7 +397,7 @@ export default function Navbar() {
 
               <NavLink
                 to="/"
-                onClick={() => setMobileMenu(false)}
+                onClick={() => { setMobileMenu(false); setOpenDropdown(null); }}
                 className={navLinkClass}
               >
                 Home
@@ -289,43 +405,105 @@ export default function Navbar() {
 
               <NavLink
                 to="/shop"
-                onClick={() => setMobileMenu(false)}
+                onClick={() => { setMobileMenu(false); setOpenDropdown(null); }}
                 className="border-b border-gray-100 py-3 text-sm font-medium text-gray-700"
               >
                 Shop
               </NavLink>
 
-              <NavLink
-                to="/shop?category=laptops"
-                onClick={() => setMobileMenu(false)}
-                className="border-b border-gray-100 py-3 text-sm font-medium text-gray-700"
-              >
-                Laptops
-              </NavLink>
+              {/* Mobile category menus */}
+              {Object.entries(categoryMenus).map(([category, items]) => (
+                <div key={category} className="border-b border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setOpenDropdown(
+                        openDropdown === category ? null : category
+                      )
+                    }
+                    className="flex w-full items-center justify-between py-3 text-left text-sm font-medium text-gray-700"
+                  >
+                    <span>{category}</span>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth="2"
+                      stroke="currentColor"
+                      className={`h-4 w-4 transition-transform ${
+                        openDropdown === category ? "rotate-180" : ""
+                      }`}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="m6 9 6 6 6-6"
+                      />
+                    </svg>
+                  </button>
 
-              <NavLink
-                to="/shop?category=smartphones"
-                onClick={() => setMobileMenu(false)}
-                className="border-b border-gray-100 py-3 text-sm font-medium text-gray-700"
-              >
-                Phones
-              </NavLink>
+                  {openDropdown === category && (
+                    <div className="mb-2 rounded-lg bg-gray-50">
+                      {items.map((item) => (
+                        <Link
+                          key={item.name}
+                          to={item.path}
+                          onClick={() => {
+                            setOpenDropdown(null);
+                            setMobileMenu(false);
+                          }}
+                          className="block px-4 py-2.5 text-sm text-gray-600 hover:bg-blue-50 hover:text-blue-600"
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
 
-              <NavLink
-                to="/shop?category=printers"
-                onClick={() => setMobileMenu(false)}
-                className="border-b border-gray-100 py-3 text-sm font-medium text-gray-700"
-              >
-                Printers
-              </NavLink>
+              {isAuthenticated && user ? (
+                <div className="border-t border-gray-100 pt-3">
+                  <div className="mb-3 flex items-center gap-3">
+                    {user.profile_image ? (
+                      <img
+                        src={user.profile_image}
+                        alt={user.username}
+                        className="h-10 w-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
+                        {(user.first_name || user.username || "U")
+                          .charAt(0)
+                          .toUpperCase()}
+                      </div>
+                    )}
 
-              <Link
-                to="/login"
-                onClick={() => setMobileMenu(false)}
-                className="py-3 text-sm font-medium text-gray-700"
-              >
-                Login / Account
-              </Link>
+                    <div>
+                      <p className="text-xs text-gray-500">Welcome,</p>
+                      <p className="text-sm font-semibold text-gray-900">
+                        {user.first_name || user.username}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full rounded-lg py-3 text-left text-sm font-medium text-red-600 hover:bg-red-50"
+                  >
+                    🚪 Logout
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={() => { setMobileMenu(false); setOpenDropdown(null); }}
+                  className="py-3 text-sm font-medium text-gray-700"
+                >
+                  Login / Account
+                </Link>
+              )}
 
             </div>
 
