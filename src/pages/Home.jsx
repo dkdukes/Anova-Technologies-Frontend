@@ -35,13 +35,13 @@ const categories = [
   },
   {
     name: "Computer Accessories",
-    slug: "computer-accessories",
+    slug: "accessories",
     icon: "⌨️",
     description: "Keyboards, mice, storage and more",
   },
   {
     name: "Phone Accessories",
-    slug: "phone-accessories",
+    slug: "accessories",
     icon: "🔌",
     description: "Chargers, cables, cases and more",
   },

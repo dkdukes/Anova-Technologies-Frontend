@@ -27,117 +27,153 @@ import BrandDetails from "./pages/Admin/BrandDetails";
 import Settings from "./pages/Admin/Settings";
 
 import ProtectedRoute from "./components/ProtectedRoute";
+
 import { AuthProvider } from "./context/AuthContext";
+import { CartProvider } from "./context/CartContext";
+
 
 function App() {
     return (
         <AuthProvider>
-            <BrowserRouter>
-                <Routes>
+            <CartProvider>
+                <BrowserRouter>
+                    <Routes>
 
-                    {/* Public authentication routes */}
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/signup" element={<Signup />} />
-
-                    {/* Public store */}
-                    <Route element={<MainLayout />}>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/shop" element={<Shop />} />
+                        {/* Public authentication routes */}
                         <Route
-                            path="/products/:slug"
-                            element={<ProductDetails />}
+                            path="/login"
+                            element={<Login />}
                         />
-                        <Route path="/cart" element={<Cart />} />
-                    </Route>
 
-                    {/* Customer-only checkout */}
-                    <Route element={<ProtectedRoute allowedRoles={["customer"]} />}>
+                        <Route
+                            path="/signup"
+                            element={<Signup />}
+                        />
+
+
+                        {/* Public store */}
                         <Route element={<MainLayout />}>
                             <Route
-                                path="/checkout"
-                                element={<Checkout />}
+                                path="/"
+                                element={<Home />}
+                            />
+
+                            <Route
+                                path="/shop"
+                                element={<Shop />}
+                            />
+
+                            <Route
+                                path="/products/:slug"
+                                element={<ProductDetails />}
+                            />
+
+                            <Route
+                                path="/cart"
+                                element={<Cart />}
                             />
                         </Route>
-                    </Route>
 
-                    {/* Staff + Admin area */}
-                    <Route
-                        element={
-                            <ProtectedRoute
-                                allowedRoles={["staff", "admin"]}
-                            />
-                        }
-                    >
-                        <Route path="/admin" element={<AdminLayout />}>
-                            <Route
-                                path="dashboard"
-                                element={<AdminDashboard />}
-                            />
 
-                            <Route
-                                path="products"
-                                element={<Products />}
-                            />
-
-                            <Route
-                                path="products/:id"
-                                element={<AdminProductDetails />}
-                            />
-
-                            <Route
-                                path="products/:id/edit"
-                                element={<EditProduct />}
-                            />
-
-                            <Route
-                                path="products/create"
-                                element={<CreateProduct />}
-                            />
-
-                            <Route
-                                path="orders"
-                                element={<Orders />}
-                            />
-
-                            <Route
-                                path="orders/:id"
-                                element={<OrderDetails />}
-                            />
-
-                            <Route
-                                path="customers"
-                                element={<Customers />}
-                            />
-
-                            <Route
-                                path="customers/:id"
-                                element={<CustomerDetails />}
-                            />
-
-                            <Route
-                                path="categories"
-                                element={<Categories />}
-                            />
-
-                            <Route
-                                path="brands"
-                                element={<Brands />}
-                            />
-
-                            <Route
-                                path="brands/:id"
-                                element={<BrandDetails />}
-                            />
-
-                            <Route
-                                path="settings"
-                                element={<Settings />}
-                            />
+                        {/* Customer-only checkout */}
+                        <Route
+                            element={
+                                <ProtectedRoute
+                                    allowedRoles={["customer"]}
+                                />
+                            }
+                        >
+                            <Route element={<MainLayout />}>
+                                <Route
+                                    path="/checkout"
+                                    element={<Checkout />}
+                                />
+                            </Route>
                         </Route>
-                    </Route>
 
-                </Routes>
-            </BrowserRouter>
+
+                        {/* Staff + Admin area */}
+                        <Route
+                            element={
+                                <ProtectedRoute
+                                    allowedRoles={["staff", "admin"]}
+                                />
+                            }
+                        >
+                            <Route
+                                path="/admin"
+                                element={<AdminLayout />}
+                            >
+                                <Route
+                                    path="dashboard"
+                                    element={<AdminDashboard />}
+                                />
+
+                                <Route
+                                    path="products"
+                                    element={<Products />}
+                                />
+
+                                <Route
+                                    path="products/:id"
+                                    element={<AdminProductDetails />}
+                                />
+
+                                <Route
+                                    path="products/:id/edit"
+                                    element={<EditProduct />}
+                                />
+
+                                <Route
+                                    path="products/create"
+                                    element={<CreateProduct />}
+                                />
+
+                                <Route
+                                    path="orders"
+                                    element={<Orders />}
+                                />
+
+                                <Route
+                                    path="orders/:id"
+                                    element={<OrderDetails />}
+                                />
+
+                                <Route
+                                    path="customers"
+                                    element={<Customers />}
+                                />
+
+                                <Route
+                                    path="customers/:id"
+                                    element={<CustomerDetails />}
+                                />
+
+                                <Route
+                                    path="categories"
+                                    element={<Categories />}
+                                />
+
+                                <Route
+                                    path="brands"
+                                    element={<Brands />}
+                                />
+
+                                <Route
+                                    path="brands/:id"
+                                    element={<BrandDetails />}
+                                />
+
+                                <Route
+                                    path="settings"
+                                    element={<Settings />}
+                                />
+                            </Route>
+                        </Route>
+
+                    </Routes>
+                </BrowserRouter>
+            </CartProvider>
         </AuthProvider>
     );
 }
