@@ -8,6 +8,37 @@ import { useCart } from "../context/CartContext";
    CATEGORIES
 ========================================================= */
 
+const customerReviews = [
+  {
+    name: "Brian Mwangi",
+    location: "Nairobi",
+    rating: 5,
+    review:
+      "Ordered a laptop from Anova Technologies and honestly, the service was excellent. The laptop arrived in perfect condition and the delivery was quick. The whole process was smooth from ordering to delivery. Definitely recommend them.",
+  },
+  {
+    name: "Mercy Wanjiku",
+    location: "Kiambu",
+    rating: 5,
+    review:
+      "I bought a Samsung phone from Anova Technologies and I’m very happy with my purchase. The price was fair, the phone was exactly as described, and customer service was very helpful. I’ll definitely shop here again.",
+  },
+  {
+    name: "Kevin Otieno",
+    location: "Kisumu",
+    rating: 5,
+    review:
+      "Great experience shopping with Anova Technologies. I ordered a printer and some accessories, and everything arrived safely. I especially liked how easy it was to place the order and track everything. Very reliable Kenyan tech store.",
+  },
+  {
+    name: "Faith Njeri",
+    location: "Nairobi",
+    rating: 5,
+    review:
+      "Anova Technologies has some really good deals. I got a laptop at a great price and the quality is excellent. The team was responsive whenever I had a question. I’m happy with the service and would recommend Anova to anyone looking for genuine tech products.",
+  },
+];
+
 const categories = [
   {
     name: "Laptops",
@@ -737,6 +768,94 @@ export default function Home() {
           />
         </>
       )}
+
+      {/* =========================
+              CUSTOMER REVIEWS
+          ========================= */}
+          <section className="bg-gray-50 py-16">
+            <div className="mx-auto max-w-7xl px-6">
+
+              {/* Section heading */}
+              <div className="mb-10 text-center">
+                <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-gray-500">
+                  What Our Customers Say
+                </p>
+
+                <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+                  Loved by Customers Across Kenya
+                </h2>
+
+                <p className="mx-auto mt-3 max-w-2xl text-gray-600">
+                  See what our customers have to say about their shopping
+                  experience with Anova Technologies.
+                </p>
+              </div>
+
+
+              {/* Reviews */}
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+
+                {customerReviews.map((review) => (
+                  <div
+                    key={`${review.name}-${review.location}`}
+                    className="flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
+                  >
+
+                    {/* Stars */}
+                    <div className="mb-4 flex gap-1">
+                      {[...Array(review.rating)].map(
+                        (_, index) => (
+                          <span
+                            key={index}
+                            className="text-lg text-yellow-400"
+                          >
+                            ★
+                          </span>
+                        )
+                      )}
+                    </div>
+
+
+                    {/* Review */}
+                    <p className="flex-1 text-sm leading-6 text-gray-600">
+                      “{review.review}”
+                    </p>
+
+
+                    {/* Customer */}
+                    <div className="mt-6 flex items-center border-t border-gray-100 pt-5">
+
+                      {/* Avatar */}
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gray-900 text-sm font-bold text-white">
+                        {review.name
+                          .split(" ")
+                          .map((name) => name[0])
+                          .join("")
+                          .slice(0, 2)
+                          .toUpperCase()}
+                      </div>
+
+
+                      {/* Customer information */}
+                      <div className="ml-3">
+                        <h3 className="text-sm font-semibold text-gray-900">
+                          {review.name}
+                        </h3>
+
+                        <p className="text-xs text-gray-500">
+                          {review.location}, Kenya
+                        </p>
+                      </div>
+
+                    </div>
+
+                  </div>
+                ))}
+
+              </div>
+
+            </div>
+          </section>
 
       {/* =====================================================
           WHY CHOOSE ANOVA
