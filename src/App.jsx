@@ -39,7 +39,9 @@ function App() {
                 <BrowserRouter>
                     <Routes>
 
-                        {/* Public authentication routes */}
+                        {/* =================================
+                            PUBLIC AUTHENTICATION ROUTES
+                        ================================= */}
                         <Route
                             path="/login"
                             element={<Login />}
@@ -51,31 +53,42 @@ function App() {
                         />
 
 
-                        {/* Public store */}
+                        {/* =================================
+                            PUBLIC STORE
+                            Footer is provided by MainLayout
+                        ================================= */}
                         <Route element={<MainLayout />}>
+
+                            {/* Home */}
                             <Route
                                 path="/"
                                 element={<Home />}
                             />
 
+                            {/* Shop */}
                             <Route
                                 path="/shop"
                                 element={<Shop />}
                             />
 
+                            {/* Product Details */}
                             <Route
                                 path="/products/:slug"
                                 element={<ProductDetails />}
                             />
 
+                            {/* Cart */}
                             <Route
                                 path="/cart"
                                 element={<Cart />}
                             />
+
                         </Route>
 
 
-                        {/* Customer-only checkout */}
+                        {/* =================================
+                            CUSTOMER-ONLY CHECKOUT
+                        ================================= */}
                         <Route
                             element={
                                 <ProtectedRoute
@@ -84,30 +97,45 @@ function App() {
                             }
                         >
                             <Route element={<MainLayout />}>
+
                                 <Route
                                     path="/checkout"
                                     element={<Checkout />}
                                 />
+
                             </Route>
                         </Route>
 
 
-                        {/* Staff + Admin area */}
+                        {/* =================================
+                            STAFF + ADMIN AREA
+                        ================================= */}
                         <Route
                             element={
                                 <ProtectedRoute
-                                    allowedRoles={["staff", "admin"]}
+                                    allowedRoles={[
+                                        "staff",
+                                        "admin",
+                                    ]}
                                 />
                             }
                         >
+
                             <Route
                                 path="/admin"
                                 element={<AdminLayout />}
                             >
+
+                                {/* Dashboard */}
                                 <Route
                                     path="dashboard"
                                     element={<AdminDashboard />}
                                 />
+
+
+                                {/* =================================
+                                    PRODUCTS
+                                ================================= */}
 
                                 <Route
                                     path="products"
@@ -116,7 +144,9 @@ function App() {
 
                                 <Route
                                     path="products/:id"
-                                    element={<AdminProductDetails />}
+                                    element={
+                                        <AdminProductDetails />
+                                    }
                                 />
 
                                 <Route
@@ -129,6 +159,11 @@ function App() {
                                     element={<CreateProduct />}
                                 />
 
+
+                                {/* =================================
+                                    ORDERS
+                                ================================= */}
+
                                 <Route
                                     path="orders"
                                     element={<Orders />}
@@ -138,6 +173,11 @@ function App() {
                                     path="orders/:id"
                                     element={<OrderDetails />}
                                 />
+
+
+                                {/* =================================
+                                    CUSTOMERS
+                                ================================= */}
 
                                 <Route
                                     path="customers"
@@ -149,10 +189,20 @@ function App() {
                                     element={<CustomerDetails />}
                                 />
 
+
+                                {/* =================================
+                                    CATEGORIES
+                                ================================= */}
+
                                 <Route
                                     path="categories"
                                     element={<Categories />}
                                 />
+
+
+                                {/* =================================
+                                    BRANDS
+                                ================================= */}
 
                                 <Route
                                     path="brands"
@@ -164,11 +214,18 @@ function App() {
                                     element={<BrandDetails />}
                                 />
 
+
+                                {/* =================================
+                                    SETTINGS
+                                ================================= */}
+
                                 <Route
                                     path="settings"
                                     element={<Settings />}
                                 />
+
                             </Route>
+
                         </Route>
 
                     </Routes>
@@ -177,5 +234,6 @@ function App() {
         </AuthProvider>
     );
 }
+
 
 export default App;
