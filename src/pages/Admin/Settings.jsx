@@ -1,7 +1,12 @@
+
 import { useEffect, useState } from "react";
 import api from "../../api";
 
 function Settings() {
+    // -------------------------------------------------
+    // STORE SETTINGS
+    // -------------------------------------------------
+
     const [settings, setSettings] = useState({
         store_name: "",
         store_email: "",
@@ -15,8 +20,13 @@ function Settings() {
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+
+    // -------------------------------------------------
+    // FETCH STORE SETTINGS
+    // -------------------------------------------------
 
     useEffect(() => {
         fetchSettings();
@@ -51,6 +61,10 @@ function Settings() {
         }
     };
 
+    // -------------------------------------------------
+    // STORE SETTINGS CHANGE
+    // -------------------------------------------------
+
     const handleChange = (e) => {
         const { name, value } = e.target;
 
@@ -62,6 +76,10 @@ function Settings() {
         setSuccess("");
         setError("");
     };
+
+    // -------------------------------------------------
+    // SAVE STORE SETTINGS
+    // -------------------------------------------------
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -103,6 +121,10 @@ function Settings() {
         }
     };
 
+    // -------------------------------------------------
+    // LOADING
+    // -------------------------------------------------
+
     if (loading) {
         return (
             <div className="flex min-h-[400px] items-center justify-center">
@@ -113,8 +135,13 @@ function Settings() {
         );
     }
 
+    // -------------------------------------------------
+    // PAGE
+    // -------------------------------------------------
+
     return (
         <div className="space-y-6">
+
             {/* Header */}
             <div>
                 <h1 className="text-2xl font-bold text-gray-900">
@@ -144,6 +171,7 @@ function Settings() {
                 onSubmit={handleSubmit}
                 className="rounded-xl border border-gray-200 bg-white shadow-sm"
             >
+                {/* Header */}
                 <div className="border-b border-gray-200 px-6 py-5">
                     <h2 className="text-lg font-semibold text-gray-900">
                         General Information
@@ -154,6 +182,7 @@ function Settings() {
                     </p>
                 </div>
 
+                {/* Fields */}
                 <div className="grid grid-cols-1 gap-6 p-6 md:grid-cols-2">
 
                     {/* Store Name */}
@@ -168,7 +197,7 @@ function Settings() {
                             value={settings.store_name}
                             onChange={handleChange}
                             required
-                            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                             placeholder="Anova Technologies"
                         />
                     </div>
@@ -184,8 +213,8 @@ function Settings() {
                             name="store_email"
                             value={settings.store_email}
                             onChange={handleChange}
-                            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
-                            placeholder="info@example.com"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                            placeholder="info@anova.co.ke"
                         />
                     </div>
 
@@ -200,7 +229,7 @@ function Settings() {
                             name="phone"
                             value={settings.phone}
                             onChange={handleChange}
-                            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                             placeholder="+254 700 000 000"
                         />
                     </div>
@@ -216,7 +245,7 @@ function Settings() {
                             name="country"
                             value={settings.country}
                             onChange={handleChange}
-                            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                             placeholder="Kenya"
                         />
                     </div>
@@ -232,7 +261,7 @@ function Settings() {
                             name="address"
                             value={settings.address}
                             onChange={handleChange}
-                            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                             placeholder="Street / Building"
                         />
                     </div>
@@ -248,7 +277,7 @@ function Settings() {
                             name="city"
                             value={settings.city}
                             onChange={handleChange}
-                            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                             placeholder="Nairobi"
                         />
                     </div>
@@ -264,7 +293,7 @@ function Settings() {
                             name="logo"
                             value={settings.logo}
                             onChange={handleChange}
-                            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
+                            className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                             placeholder="https://..."
                         />
 
@@ -300,7 +329,7 @@ function Settings() {
                             value={settings.description}
                             onChange={handleChange}
                             rows={5}
-                            className="w-full resize-none rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-gray-900 focus:ring-1 focus:ring-gray-900"
+                            className="w-full resize-none rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none transition focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                             placeholder="Tell customers about Anova Technologies..."
                         />
                     </div>
@@ -319,8 +348,10 @@ function Settings() {
                     </button>
                 </div>
             </form>
+
         </div>
     );
 }
 
 export default Settings;
+

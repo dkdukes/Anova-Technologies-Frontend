@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -6,6 +5,8 @@ import { useAuth } from "../context/AuthContext";
 export default function Login() {
     const navigate = useNavigate();
     const { login } = useAuth();
+
+    const [loginType, setLoginType] = useState("customer");
 
     const [formData, setFormData] = useState({
         username: "",
@@ -24,6 +25,11 @@ export default function Login() {
         }));
     };
 
+    const handleLoginTypeChange = (type) => {
+        setLoginType(type);
+        setError("");
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -31,7 +37,6 @@ export default function Login() {
         setLoading(true);
 
         try {
-            // Login through AuthContext
             const response = await login(
                 formData.username,
                 formData.password
@@ -39,15 +44,42 @@ export default function Login() {
 
             const user = response.user;
 
-            // Redirect based on role
-            if (
-                user.role === "admin" ||
-                user.role === "staff"
-            ) {
-                navigate("/admin/dashboard");
-            } else {
-                navigate("/");
+            /*
+             * ADMIN / STAFF LOGIN
+             */
+            if (loginType === "admin") {
+                if (
+                    user.role !== "admin" &&
+                    user.role !== "staff"
+                ) {
+                    setError(
+                        "This account does not have admin or staff access."
+                    );
+
+                    return;
+                }
+
+                navigate("/admin/dashboard", {
+                    replace: true,
+                });
+
+                return;
             }
+
+            /*
+             * CUSTOMER LOGIN
+             */
+            if (user.role !== "customer") {
+                setError(
+                    "Please use the Admin / Staff login option for this account."
+                );
+
+                return;
+            }
+
+            navigate("/", {
+                replace: true,
+            });
 
         } catch (err) {
             console.error("Login error:", err);
@@ -64,7 +96,9 @@ export default function Login() {
                             : data.non_field_errors
                     );
                 } else {
-                    setError("Invalid username or password.");
+                    setError(
+                        "Invalid username or password."
+                    );
                 }
             } else {
                 setError(
@@ -77,19 +111,62 @@ export default function Login() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+        <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
 
-            <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+            <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-lg">
 
                 {/* Header */}
-                <div className="text-center mb-8">
+                <div className="mb-8 text-center">
+
                     <h1 className="text-3xl font-bold text-gray-900">
-                        Welcome Back
+                        {loginType === "admin"
+                            ? "Admin & Staff Login"
+                            : "Welcome Back"}
                     </h1>
 
                     <p className="mt-2 text-gray-600">
-                        Sign in to your Anova Technologies account
+                        {loginType === "admin"
+                            ? "Sign in to manage Anova Technologies"
+                            : "Sign in to your Anova Technologies account"}
                     </p>
+
+                </div>
+
+                {/* Login Type */}
+                <div className="mb-6 rounded-lg bg-gray-100 p-1">
+
+                    <div className="grid grid-cols-2 gap-1">
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                handleLoginTypeChange("customer")
+                            }
+                            className={`rounded-md px-4 py-2.5 text-sm font-semibold transition ${
+                                loginType === "customer"
+                                    ? "bg-white text-gray-900 shadow-sm"
+                                    : "text-gray-500 hover:text-gray-900"
+                            }`}
+                        >
+                            Customer
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                handleLoginTypeChange("admin")
+                            }
+                            className={`rounded-md px-4 py-2.5 text-sm font-semibold transition ${
+                                loginType === "admin"
+                                    ? "bg-white text-gray-900 shadow-sm"
+                                    : "text-gray-500 hover:text-gray-900"
+                            }`}
+                        >
+                            Admin / Staff
+                        </button>
+
+                    </div>
+
                 </div>
 
                 {/* Error */}
@@ -107,9 +184,10 @@ export default function Login() {
 
                     {/* Username */}
                     <div>
+
                         <label
                             htmlFor="username"
-                            className="block text-sm font-medium text-gray-700 mb-1"
+                            className="mb-1 block text-sm font-medium text-gray-700"
                         >
                             Username
                         </label>
@@ -125,13 +203,15 @@ export default function Login() {
                             placeholder="Enter your username"
                             className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
                         />
+
                     </div>
 
                     {/* Password */}
                     <div>
+
                         <label
                             htmlFor="password"
-                            className="block text-sm font-medium text-gray-700 mb-1"
+                            className="mb-1 block text-sm font-medium text-gray-700"
                         >
                             Password
                         </label>
@@ -147,6 +227,7 @@ export default function Login() {
                             placeholder="Enter your password"
                             className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-gray-900"
                         />
+
                     </div>
 
                     {/* Login Button */}
@@ -157,26 +238,43 @@ export default function Login() {
                     >
                         {loading
                             ? "Signing In..."
-                            : "Sign In"}
+                            : loginType === "admin"
+                                ? "Sign In to Admin"
+                                : "Sign In"}
                     </button>
 
                 </form>
 
-                {/* Signup Link */}
-                <div className="mt-6 text-center text-sm text-gray-600">
-                    Don't have an account?{" "}
+                {/* Customer Signup */}
+                {loginType === "customer" && (
+                    <div className="mt-6 text-center text-sm text-gray-600">
 
-                    <Link
-                        to="/signup"
-                        className="font-semibold text-gray-900 hover:underline"
-                    >
-                        Create an account
-                    </Link>
-                </div>
+                        Don't have an account?{" "}
+
+                        <Link
+                            to="/signup"
+                            className="font-semibold text-gray-900 hover:underline"
+                        >
+                            Create an account
+                        </Link>
+
+                    </div>
+                )}
+
+                {/* Admin Information */}
+                {loginType === "admin" && (
+                    <div className="mt-6 rounded-lg bg-blue-50 p-4 text-center">
+
+                        <p className="text-sm text-blue-700">
+                            Admin and staff accounts are created
+                            by an authorized administrator.
+                        </p>
+
+                    </div>
+                )}
 
             </div>
 
         </div>
     );
 }
-

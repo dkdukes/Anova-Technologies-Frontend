@@ -548,11 +548,8 @@ function ProductDetails() {
                                 </label>
 
                                 <QuantitySelector
-                                    quantity={quantity}
-                                    setQuantity={
-                                        handleQuantityChange
-                                    }
-                                    max={stock}
+                                    stock={stock}
+                                    onChange={handleQuantityChange}
                                 />
 
                             </div>

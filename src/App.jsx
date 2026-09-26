@@ -25,6 +25,9 @@ import Categories from "./pages/Admin/Categories";
 import Brands from "./pages/Admin/Brands";
 import BrandDetails from "./pages/Admin/BrandDetails";
 import Settings from "./pages/Admin/Settings";
+import StaffAdmin from "./pages/Admin/StaffAdmin";
+import StaffAdminDetails from "./pages/Admin/StaffAdminDetails";
+import StaffAdminCreate from "./pages/Admin/StaffAdminCreate";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -42,6 +45,7 @@ function App() {
                         {/* =================================
                             PUBLIC AUTHENTICATION ROUTES
                         ================================= */}
+
                         <Route
                             path="/login"
                             element={<Login />}
@@ -55,29 +59,25 @@ function App() {
 
                         {/* =================================
                             PUBLIC STORE
-                            Footer is provided by MainLayout
                         ================================= */}
+
                         <Route element={<MainLayout />}>
 
-                            {/* Home */}
                             <Route
                                 path="/"
                                 element={<Home />}
                             />
 
-                            {/* Shop */}
                             <Route
                                 path="/shop"
                                 element={<Shop />}
                             />
 
-                            {/* Product Details */}
                             <Route
                                 path="/products/:slug"
                                 element={<ProductDetails />}
                             />
 
-                            {/* Cart */}
                             <Route
                                 path="/cart"
                                 element={<Cart />}
@@ -89,6 +89,7 @@ function App() {
                         {/* =================================
                             CUSTOMER-ONLY CHECKOUT
                         ================================= */}
+
                         <Route
                             element={
                                 <ProtectedRoute
@@ -110,6 +111,7 @@ function App() {
                         {/* =================================
                             STAFF + ADMIN AREA
                         ================================= */}
+
                         <Route
                             element={
                                 <ProtectedRoute
@@ -126,7 +128,10 @@ function App() {
                                 element={<AdminLayout />}
                             >
 
-                                {/* Dashboard */}
+                                {/* =================================
+                                    DASHBOARD
+                                ================================= */}
+
                                 <Route
                                     path="dashboard"
                                     element={<AdminDashboard />}
@@ -213,6 +218,35 @@ function App() {
                                     path="brands/:id"
                                     element={<BrandDetails />}
                                 />
+
+
+                                {/* =================================
+                                    STAFF & ADMINS
+                                    ADMIN ONLY
+                                ================================= */}
+
+                                <Route
+                                    element={
+                                        <ProtectedRoute
+                                            allowedRoles={["admin"]}
+                                        />
+                                    }
+                                >
+                                    <Route
+                                        path="staff"
+                                        element={<StaffAdmin />}
+                                    />
+
+                                    <Route
+                                        path="staff/create"
+                                        element={<StaffAdminCreate />}
+                                    />
+
+                                    <Route
+                                        path="staff/:id"
+                                        element={<StaffAdminDetails />}
+                                    />
+                                </Route>
 
 
                                 {/* =================================

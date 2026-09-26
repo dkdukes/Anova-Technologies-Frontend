@@ -1,3 +1,4 @@
+
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -36,6 +37,12 @@ const menuItems = [
         name: "Brands",
         path: "/admin/brands",
         icon: "⭐",
+    },
+    {
+        name: "Staff & Admins",
+        path: "/admin/staff",
+        icon: "🛡️",
+        adminOnly: true,
     },
     {
         name: "Settings",
@@ -284,3 +291,4 @@ function AdminSidebar({
 }
 
 export default AdminSidebar;
+
