@@ -37,7 +37,7 @@ function Footer() {
             <div className="mt-6 flex gap-3">
 
               <a
-                href="#"
+                href="https://www.facebook.com/share/19UrJVdvyV/"
                 aria-label="Facebook"
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-700 text-gray-400 transition hover:border-white hover:bg-white hover:text-gray-900"
               >
@@ -51,7 +51,7 @@ function Footer() {
               </a>
 
               <a
-                href="#"
+                href="https://www.instagram.com/anova_tech?dlrf=dWNyOHV6amR3bGFn&utm_source=qr"
                 aria-label="Instagram"
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-700 text-gray-400 transition hover:border-white hover:bg-white hover:text-gray-900"
               >
@@ -85,21 +85,22 @@ function Footer() {
               </a>
 
               <a
-                href="#"
-                aria-label="X"
+                href="www.tiktok.com/@anovatech"
+                aria-label="TikTok"
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-700 text-gray-400 transition hover:border-white hover:bg-white hover:text-gray-900"
               >
                 <svg
                   className="h-5 w-5"
                   fill="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
-                  <path d="M18.9 2H22l-6.8 7.8L23.2 22h-6.3l-5-6.5L6.2 22H3.1l7.2-8.2L2.8 2h6.4l4.5 5.9L18.9 2zm-1.1 17.9h1.7L8.3 4H6.5l11.3 15.9z" />
+                  <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.7v13.67a2.9 2.9 0 0 1-2.9 2.9 2.9 2.9 0 1 1 2.9-2.9V12a6.6 6.6 0 0 0-1.1-.1 6.6 6.6 0 1 0 6.6 6.6V11.5a8.4 8.4 0 0 0 4.9 1.57V9.38a4.85 4.85 0 0 1-2.93-2.69Z" />
                 </svg>
               </a>
 
               <a
-                href="#"
+                href="https://wa.me/+254726128360"
                 aria-label="WhatsApp"
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-700 text-gray-400 transition hover:border-white hover:bg-white hover:text-gray-900"
               >
@@ -149,7 +150,7 @@ function Footer() {
 
               <li>
                 <Link
-                  to="/shop?category=smartphones"
+                  to="/shop?category=phones"
                   className="transition hover:text-white"
                 >
                   Smartphones
@@ -167,19 +168,10 @@ function Footer() {
 
               <li>
                 <Link
-                  to="/shop?category=computer-accessories"
+                  to="/shop?category=accessories"
                   className="transition hover:text-white"
                 >
                   Computer Accessories
-                </Link>
-              </li>
-
-              <li>
-                <Link
-                  to="/shop?category=phone-accessories"
-                  className="transition hover:text-white"
-                >
-                  Phone Accessories
                 </Link>
               </li>
 
@@ -225,30 +217,30 @@ function Footer() {
               </li>
 
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/delivery-information"
                   className="transition hover:text-white"
                 >
                   Delivery Information
-                </a>
+                </Link>
               </li>
 
-              <li>
-                <a
-                  href="#"
+               <li>
+                <Link
+                  to="/returns-refunds"
                   className="transition hover:text-white"
                 >
                   Returns & Refunds
-                </a>
+                </Link>
               </li>
 
               <li>
-                <a
-                  href="#"
+                <Link
+                  to="/contact-support"
                   className="transition hover:text-white"
                 >
                   Contact Support
-                </a>
+                </Link>
               </li>
 
             </ul>
@@ -323,7 +315,7 @@ function Footer() {
                     href="tel:+254700000000"
                     className="mt-1 block text-gray-400 transition hover:text-white"
                   >
-                    +254 700 000 000
+                    +254 726 128 360
                   </a>
                 </div>
               </div>
@@ -358,7 +350,7 @@ function Footer() {
                     href="mailto:info@anovatechnologies.co.ke"
                     className="mt-1 block break-all text-gray-400 transition hover:text-white"
                   >
-                    info@anovatechnologies.co.ke
+                    anovatechnologies871@gmail.com
                   </a>
                 </div>
               </div>
@@ -425,26 +417,26 @@ function Footer() {
 
           <div className="flex flex-wrap gap-5">
 
-            <a
-              href="#"
+             <Link
+              to="/privacy-policy"
               className="text-gray-500 transition hover:text-white"
             >
               Privacy Policy
-            </a>
+            </Link>
 
-            <a
-              href="#"
+            <Link
+              to="/terms-and-conditions"
               className="text-gray-500 transition hover:text-white"
             >
               Terms & Conditions
-            </a>
+            </Link>
 
-            <a
-              href="#"
+            <Link
+              to="/cookies-policy"
               className="text-gray-500 transition hover:text-white"
             >
               Cookie Policy
-            </a>
+            </Link>
 
           </div>
 

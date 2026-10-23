@@ -182,8 +182,30 @@ function ProductDetails() {
     const specifications =
         product.specifications || [];
 
+    // Technical details are saved directly on Product by CreateProduct.jsx.
+    const technicalSpecifications = [
+        { name: "Model", value: product.model },
+        { name: "CPU Manufacturer", value: product.cpu_manufacturer },
+        { name: "CPU Cores", value: product.cpu_cores },
+        { name: "CPU Speed", value: product.cpu_speed ? `${product.cpu_speed} GHz` : "" },
+        { name: "Display Size", value: product.display_size ? `${product.display_size} inches` : "" },
+        { name: "Drive Type", value: product.drive_type },
+        { name: "Graphics Type", value: product.graphics_type },
+        { name: "Storage Capacity", value: product.storage_capacity },
+        { name: "System Memory", value: product.system_memory },
+        { name: "Color", value: product.color },
+        { name: "Weight", value: product.weight ? `${product.weight} kg` : "" },
+        { name: "Variation", value: product.variation },
+        { name: "Condition", value: product.condition === "refurbished" ? "Refurbished" : product.condition === "new" ? "New" : product.condition },
+    ].filter((spec) => spec.value !== null && spec.value !== undefined && String(spec.value).trim() !== "");
+
+    const allSpecifications = [
+        ...technicalSpecifications,
+        ...specifications,
+    ];
+
     const highlights =
-        product.highlights || [];
+        Array.isArray(product.highlights) ? product.highlights : [];
 
     const stock =
         Number(product.stock_quantity ?? product.stock ?? 0);
@@ -194,8 +216,15 @@ function ProductDetails() {
     const salePrice =
         Number(product.sale_price || 0);
 
+    const now = new Date();
+    const saleStarts = product.sale_start_date ? new Date(product.sale_start_date) : null;
+    const saleEnds = product.sale_end_date ? new Date(product.sale_end_date) : null;
+    const saleIsWithinDates =
+        (!saleStarts || now >= saleStarts) &&
+        (!saleEnds || now <= saleEnds);
+
     const hasSale =
-        salePrice > 0 && salePrice < price;
+        salePrice > 0 && salePrice < price && saleIsWithinDates;
 
     const currentPrice =
         hasSale ? salePrice : price;
@@ -633,15 +662,15 @@ function ProductDetails() {
 
                 {product.description && (
                     <section className="mt-16 border-t border-gray-200 pt-10">
-
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">
                             Product Description
                         </h2>
 
-                        <div className="text-gray-600 leading-relaxed whitespace-pre-line">
-                            {product.description}
-                        </div>
-
+                        {/* CreateProduct saves formatted description content as HTML. */}
+                        <div
+                            className="prose prose-gray max-w-none text-gray-600 leading-relaxed [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-lg [&_img]:my-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6"
+                            dangerouslySetInnerHTML={{ __html: product.description }}
+                        />
                     </section>
                 )}
 
@@ -691,47 +720,29 @@ function ProductDetails() {
                     SPECIFICATIONS
                 ============================================================= */}
 
-                {specifications.length > 0 && (
+                {allSpecifications.length > 0 && (
                     <section className="mt-12">
-
                         <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                            Specifications
+                            Technical Specifications
                         </h2>
 
                         <div className="border border-gray-200 rounded-xl overflow-hidden">
-
-                            {specifications.map(
-                                (spec, index) => (
-                                    <div
-                                        key={
-                                            spec.id ||
-                                            index
-                                        }
-                                        className={`grid grid-cols-1 md:grid-cols-2 ${
-                                            index % 2 === 0
-                                                ? "bg-gray-50"
-                                                : "bg-white"
-                                        }`}
-                                    >
-
-                                        <div className="px-5 py-4 font-medium text-gray-900">
-                                            {spec.name ||
-                                                spec.key ||
-                                                "Specification"}
-                                        </div>
-
-                                        <div className="px-5 py-4 text-gray-600">
-                                            {spec.value ||
-                                                spec.description ||
-                                                "-"}
-                                        </div>
-
+                            {allSpecifications.map((spec, index) => (
+                                <div
+                                    key={`${spec.id || spec.name || spec.key || "spec"}-${index}`}
+                                    className={`grid grid-cols-1 md:grid-cols-2 ${
+                                        index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                                    }`}
+                                >
+                                    <div className="px-5 py-4 font-medium text-gray-900">
+                                        {spec.name || spec.key || "Specification"}
                                     </div>
-                                )
-                            )}
-
+                                    <div className="px-5 py-4 text-gray-600">
+                                        {spec.value ?? spec.description ?? "-"}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-
                     </section>
                 )}
 

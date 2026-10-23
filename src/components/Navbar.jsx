@@ -32,7 +32,6 @@ const categoryMenus = {
   Accessories: [
     { name: "All Accessories", path: "/shop?category=accessories" },
     { name: "Computer Accessories", path: "/shop?category=accessories" },
-    { name: "Phone Accessories", path: "/shop?category=accessories" },
     { name: "Keyboards", path: "/shop?search=keyboards" },
     { name: "Mice", path: "/shop?search=mice" },
     { name: "Storage", path: "/shop?search=storage" },
@@ -44,7 +43,8 @@ export default function Navbar() {
   const [search, setSearch] = useState("");
   const [mobileMenu, setMobileMenu] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(null);
-  const {totalItems} = useCart();
+  const [accountOpen, setAccountOpen] = useState(false);
+  const { totalItems } = useCart();
   const { user, logout, isAuthenticated } = useAuth();
 
   const navigate = useNavigate();
@@ -52,6 +52,8 @@ export default function Navbar() {
   const handleLogout = () => {
     logout();
     setMobileMenu(false);
+    setAccountOpen(false);
+    setOpenDropdown(null);
     navigate("/login", { replace: true });
   };
 
@@ -64,6 +66,7 @@ export default function Navbar() {
 
     navigate(`/shop?search=${encodeURIComponent(query)}`);
     setMobileMenu(false);
+    setOpenDropdown(null);
   };
 
   const navLinkClass = ({ isActive }) =>
@@ -74,22 +77,22 @@ export default function Navbar() {
     }`;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white">
+    <header className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/90">
 
       {/* Main Navbar */}
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex min-h-16 max-w-[1440px] items-center gap-3 px-4 py-2 sm:gap-4 sm:px-6 lg:px-8">
 
         {/* Logo */}
         <Link
           to="/"
-          className="flex shrink-0 items-center gap-2"
+          className="flex shrink-0 items-center gap-2.5"
           onClick={() => { setMobileMenu(false); setOpenDropdown(null); }}
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600 font-bold text-white">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-lg font-extrabold text-white shadow-sm shadow-blue-600/20">
             A
           </div>
 
-          <span className="hidden text-xl font-bold text-gray-900 sm:block">
+          <span className="hidden whitespace-nowrap text-lg font-extrabold tracking-tight text-gray-900 sm:block lg:text-xl">
             Anova{" "}
             <span className="text-blue-600">
               Technologies
@@ -104,7 +107,7 @@ export default function Navbar() {
         {/* Search */}
         <form
           onSubmit={handleSearch}
-          className="mx-auto hidden max-w-xl flex-1 md:flex"
+          className="mx-auto hidden min-w-[220px] max-w-2xl flex-[1.5] md:flex"
         >
           <div className="relative w-full">
 
@@ -113,7 +116,7 @@ export default function Navbar() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search laptops, phones, printers..."
-              className="w-full rounded-lg border border-gray-300 bg-gray-50 py-2.5 pl-4 pr-12 text-sm outline-none transition focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100"
+              className="w-full rounded-xl border border-gray-200 bg-gray-50 py-3 pl-4 pr-12 text-sm outline-none transition placeholder:text-gray-400 hover:border-gray-300 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100"
             />
 
             <button
@@ -141,7 +144,7 @@ export default function Navbar() {
         </form>
 
         {/* Desktop Navigation */}
-        <nav className="hidden items-center gap-5 lg:flex">
+        <nav className="hidden items-center gap-3 xl:flex 2xl:gap-4">
           <NavLink
             to="/"
             className={navLinkClass}
@@ -203,7 +206,7 @@ export default function Navbar() {
                       <Link
                         key={item.name}
                         to={item.path}
-                        onClick={() => setOpenDropdown(null)}
+                        onClick={() => { setOpenDropdown(null); setAccountOpen(false); }}
                         className="block px-4 py-2.5 text-sm text-gray-700 transition hover:bg-blue-50 hover:text-blue-600"
                       >
                         {item.name}
@@ -219,67 +222,73 @@ export default function Navbar() {
         {/* Actions */}
         <div className="ml-auto flex shrink-0 items-center gap-2">
 
-          {/* Account / Logged-in User */}
+          {/* Account dropdown */}
           {isAuthenticated && user ? (
-            <div className="hidden items-center gap-2 sm:flex">
-              {user.profile_image ? (
-                <img
-                  src={user.profile_image}
-                  alt={user.username}
-                  className="h-9 w-9 rounded-full object-cover"
-                />
-              ) : (
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
-                  {(user.first_name || user.username || "U")
-                    .charAt(0)
-                    .toUpperCase()}
-                </div>
-              )}
-
-              <div className="hidden xl:block">
-                <p className="text-xs text-gray-500">Welcome,</p>
-                <p className="max-w-28 truncate text-sm font-semibold text-gray-900">
-                  {user.first_name || user.username}
-                </p>
-              </div>
-
+            <div className="relative hidden sm:block">
               <button
                 type="button"
-                onClick={handleLogout}
-                className="rounded-lg px-3 py-2 text-sm font-medium text-red-600 transition hover:bg-red-50"
-                title="Logout"
+                onClick={() => setAccountOpen((open) => !open)}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") setAccountOpen(false);
+                }}
+                aria-haspopup="menu"
+                aria-expanded={accountOpen}
+                className="flex items-center gap-2 rounded-xl px-2 py-1.5 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               >
-                Logout
+                {user.profile_image ? (
+                  <img src={user.profile_image} alt={user.username || "User profile"} className="h-9 w-9 rounded-full border border-gray-200 object-cover" />
+                ) : (
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
+                    {(user.first_name || user.username || "U").charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span className="hidden max-w-28 text-left xl:block">
+                  <span className="block text-[11px] text-gray-500">Welcome back</span>
+                  <span className="block truncate text-sm font-semibold text-gray-900">{user.first_name || user.username}</span>
+                </span>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className={`hidden h-4 w-4 text-gray-500 transition-transform xl:block ${accountOpen ? "rotate-180" : ""}`}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
+                </svg>
               </button>
+
+              {accountOpen && (
+                <>
+                  <button type="button" aria-label="Close account menu" className="fixed inset-0 z-40 cursor-default" onClick={() => setAccountOpen(false)} />
+                  <div role="menu" className="absolute right-0 top-full z-50 mt-2 w-64 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl">
+                    <div className="border-b border-gray-100 bg-gray-50 px-4 py-4">
+                      <p className="text-xs font-medium uppercase tracking-wide text-gray-500">Signed in as</p>
+                      <p className="mt-1 truncate text-sm font-bold text-gray-900">{user.first_name || user.username}</p>
+                      {user.email && <p className="mt-0.5 truncate text-xs text-gray-500">{user.email}</p>}
+                    </div>
+                    <div className="p-2">
+                      {user.profile_url && (
+                        <Link role="menuitem" to={user.profile_url} onClick={() => setAccountOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-gray-700 transition hover:bg-blue-50 hover:text-blue-700">Profile</Link>
+                      )}
+                      {user.orders_url && (
+                        <Link role="menuitem" to={user.orders_url} onClick={() => setAccountOpen(false)} className="block rounded-lg px-3 py-2.5 text-sm text-gray-700 transition hover:bg-blue-50 hover:text-blue-700">My orders</Link>
+                      )}
+                      {!user.profile_url && !user.orders_url && (
+                        <p className="px-3 py-2 text-xs leading-5 text-gray-500">Profile and order-history pages can be added here when their routes are available.</p>
+                      )}
+                      <button role="menuitem" type="button" onClick={handleLogout} className="mt-1 w-full rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-red-600 transition hover:bg-red-50">Log out</button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           ) : (
-            <Link
-              to="/login"
-              className="hidden rounded-lg p-2 text-gray-600 transition hover:bg-gray-100 hover:text-blue-600 sm:block"
-              aria-label="Account"
-              title="Login / Account"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.8"
-                stroke="currentColor"
-                className="h-6 w-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15.75 6.75a3.75 3.75 0 1 1-7.5 0M4.5 20.25a7.5 7.5 0 0 1 15 0"
-                />
+            <Link to="/login" className="hidden items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-blue-50 hover:text-blue-700 sm:inline-flex" aria-label="Sign in" title="Login / Account">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.8" stroke="currentColor" className="h-5 w-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6.75a3.75 3.75 0 1 1-7.5 0M4.5 20.25a7.5 7.5 0 0 1 15 0" />
               </svg>
+              <span className="hidden xl:inline">Sign in</span>
             </Link>
           )}
 
           {/* Cart */}
           <Link
             to="/cart"
-            className="relative rounded-lg p-2 text-gray-600 transition hover:bg-gray-100 hover:text-blue-600"
+            className="relative rounded-xl p-2.5 text-gray-600 transition hover:bg-blue-50 hover:text-blue-600"
             aria-label="Shopping cart"
             title="Shopping cart"
           >
@@ -298,7 +307,7 @@ export default function Navbar() {
               />
             </svg>
 
-            {/* Cart count - will connect to CartContext later */}
+            {/* Live cart item count from CartContext */}
             {totalItems > 0 && (
               <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-blue-600 px-1 text-xs font-bold text-white">
                 {totalItems}
@@ -309,7 +318,7 @@ export default function Navbar() {
           {/* Mobile Menu */}
           <button
             type="button"
-            onClick={() => setMobileMenu(!mobileMenu)}
+            onClick={() => { setMobileMenu(!mobileMenu); setAccountOpen(false); setOpenDropdown(null); }}
             className="rounded-lg p-2 text-gray-600 transition hover:bg-gray-100 lg:hidden"
             aria-label="Toggle menu"
           >
@@ -487,12 +496,22 @@ export default function Navbar() {
                     </div>
                   </div>
 
+                  {user.profile_url && (
+                    <Link to={user.profile_url} onClick={() => setMobileMenu(false)} className="block rounded-lg px-3 py-3 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700">
+                      Profile
+                    </Link>
+                  )}
+                  {user.orders_url && (
+                    <Link to={user.orders_url} onClick={() => setMobileMenu(false)} className="block rounded-lg px-3 py-3 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700">
+                      My orders
+                    </Link>
+                  )}
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="w-full rounded-lg py-3 text-left text-sm font-medium text-red-600 hover:bg-red-50"
+                    className="mt-1 w-full rounded-lg px-3 py-3 text-left text-sm font-semibold text-red-600 transition hover:bg-red-50"
                   >
-                    🚪 Logout
+                    Log out
                   </button>
                 </div>
               ) : (

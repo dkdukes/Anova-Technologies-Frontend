@@ -28,6 +28,12 @@ import Settings from "./pages/Admin/Settings";
 import StaffAdmin from "./pages/Admin/StaffAdmin";
 import StaffAdminDetails from "./pages/Admin/StaffAdminDetails";
 import StaffAdminCreate from "./pages/Admin/StaffAdminCreate";
+import DeliveryInformation from "./pages/DeliveryInformation";
+import ReturnsRefunds from "./pages/ReturnsRefunds";
+import ContactSupport from "./pages/ContactSupport";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsAndConditions from "./pages/TermsAndConditions";
+import CookiesPolicy from "./pages/CookiesPolicy";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -82,6 +88,35 @@ function App() {
                                 path="/cart"
                                 element={<Cart />}
                             />
+
+                            <Route path="/delivery-information" element={<DeliveryInformation />} />
+
+                            <Route
+                                path="/returns-refunds"
+                                element={<ReturnsRefunds />}
+                            />
+
+                            <Route
+                                path="/contact-support"
+                                element={<ContactSupport />}
+                            />
+
+                            <Route
+                                path="/privacy-policy"
+                                element={<PrivacyPolicy />}
+                            />
+
+                            <Route
+                                path="/terms-and-conditions"
+                                element={<TermsAndConditions />}
+                            />
+
+                            <Route
+                                path="/cookies-policy"
+                                element={<CookiesPolicy />}
+                            />
+
+
 
                         </Route>
 

@@ -43,38 +43,32 @@ const categories = [
   {
     name: "Laptops",
     slug: "laptops",
-    icon: "💻",
+    image: "/images/categories/laptop.jpg",
     description: "Work, study and gaming laptops",
   },
   {
     name: "Desktops",
     slug: "desktops",
-    icon: "🖥️",
+    image: "/images/categories/desktop.webp",
     description: "Powerful desktop computers",
   },
   {
     name: "Phones",
     slug: "phones",
-    icon: "📱",
+    image: "/images/categories/phones.webp",
     description: "Latest smartphones",
   },
   {
     name: "Printers",
     slug: "printers",
-    icon: "🖨️",
+    image: "/images/categories/printers.webp",
     description: "Home and business printers",
   },
   {
     name: "Computer Accessories",
     slug: "accessories",
-    icon: "⌨️",
+    image: "/images/categories/accessories.jpeg",
     description: "Keyboards, mice, storage and more",
-  },
-  {
-    name: "Phone Accessories",
-    slug: "accessories",
-    icon: "🔌",
-    description: "Chargers, cables, cases and more",
   },
 ];
 
@@ -614,54 +608,88 @@ export default function Home() {
           CATEGORIES
       ====================================================== */}
 
-      <section className="bg-white py-16 sm:py-20">
-        <div className="mx-auto max-w-7xl px-6">
-
-          <div className="mb-10 flex items-end justify-between">
+      <section className="bg-white py-14 sm:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* Section heading */}
+          <div className="mb-8 flex items-end justify-between gap-4 sm:mb-10">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">
-                Browse
+              <p className="text-sm font-bold uppercase tracking-widest text-blue-600">
+                Browse our collection
               </p>
 
-              <h2 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-                Shop by category
+              <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl lg:text-4xl">
+                Shop by Category
               </h2>
 
-              <p className="mt-3 text-gray-600">
-                Find the technology you need.
+              <p className="mt-3 max-w-xl text-sm leading-6 text-gray-500 sm:text-base">
+                Find the right technology for work, study, business and everyday life.
               </p>
             </div>
 
             <Link
               to="/shop"
-              className="hidden font-semibold text-blue-600 hover:text-blue-700 sm:block"
+              className="hidden shrink-0 items-center gap-2 text-sm font-bold text-blue-600 transition hover:gap-3 hover:text-blue-700 sm:inline-flex"
             >
-              View all →
+              View all products <span aria-hidden="true">→</span>
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-            {categories.map(
-              (category) => (
-                <Link
-                  key={category.slug}
-                  to={`/shop?category=${category.slug}`}
-                  className="group rounded-2xl border border-gray-200 bg-white p-5 transition duration-200 hover:-translate-y-1 hover:border-blue-200 hover:shadow-lg"
-                >
-                  <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gray-100 text-3xl transition group-hover:bg-blue-50">
-                    {category.icon}
-                  </div>
+          {/* Category cards */}
+          <div className="grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-5">
+            {categories.map((category) => (
+              <Link
+                key={category.name}
+                to={`/shop?category=${category.slug}`}
+                className="group flex h-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+              >
+                {/* Product image */}
+                <div className="relative aspect-[4/3] overflow-hidden bg-gray-50">
+                  <img
+                    src={category.image}
+                    alt={category.name}
+                    loading="lazy"
+                    className="h-full w-full object-contain p-3 transition-transform duration-500 group-hover:scale-105 sm:p-4"
+                  />
 
-                  <h3 className="mt-5 font-bold text-gray-900 group-hover:text-blue-600">
+                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-gray-900/[0.04] to-transparent" />
+
+                  <span className="absolute bottom-3 right-3 flex h-8 w-8 translate-y-2 items-center justify-center rounded-full bg-blue-600 text-white opacity-0 shadow-md transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                    <span aria-hidden="true">↗</span>
+                  </span>
+                </div>
+
+                {/* Category details */}
+                <div className="flex flex-1 flex-col border-t border-gray-100 p-3 sm:p-4">
+                  <h3 className="text-sm font-bold leading-5 text-gray-900 transition-colors group-hover:text-blue-600 sm:text-base">
                     {category.name}
                   </h3>
 
-                  <p className="mt-2 text-sm leading-5 text-gray-500">
+                  <p className="mt-2 flex-1 text-xs leading-5 text-gray-500 sm:text-sm">
                     {category.description}
                   </p>
-                </Link>
-              )
-            )}
+
+                  <span className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-blue-600 sm:text-sm">
+                    Explore category
+                    <span
+                      aria-hidden="true"
+                      className="transition-transform duration-300 group-hover:translate-x-1"
+                    >
+                      →
+                    </span>
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          {/* Mobile view all */}
+          <div className="mt-7 text-center sm:hidden">
+            <Link
+              to="/shop"
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-200 px-5 py-3 text-sm font-bold text-blue-600 transition hover:border-blue-200 hover:bg-blue-50"
+            >
+              View all products <span aria-hidden="true">→</span>
+            </Link>
           </div>
         </div>
       </section>
