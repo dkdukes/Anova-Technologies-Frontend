@@ -1,6 +1,61 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 function Footer() {
+
+const [email, setEmail] = useState("");
+const [status, setStatus] = useState("");
+const [message, setMessage] = useState("");
+const [isSubmitting, setIsSubmitting] = useState(false);
+
+const handleSubscribe = async (event) => {
+  event.preventDefault();
+
+  setStatus("");
+  setMessage("");
+  setIsSubmitting(true);
+
+  try {
+    const apiBaseUrl = (
+      import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000"
+    ).replace(/\/+$/, "");
+
+    const response = await fetch(
+      `${apiBaseUrl}/api/newsletter/subscribe/`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const errorMessage =
+        data.email?.[0] ||
+        data.detail ||
+        "Subscription failed. Please try again.";
+
+      throw new Error(errorMessage);
+    }
+
+    setStatus("success");
+    setMessage(data.message || "You have successfully subscribed!");
+    setEmail("");
+  } catch (error) {
+    setStatus("error");
+    setMessage(
+      error.message ||
+        "Unable to subscribe right now. Please try again."
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
   return (
     <footer className="border-t border-gray-200 bg-gray-950 text-gray-300">
 
@@ -365,42 +420,60 @@ function Footer() {
       {/* =========================
           NEWSLETTER
       ========================= */}
-      <div className="border-y border-gray-800 bg-gray-900">
-        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-6 py-8 sm:px-8 md:flex-row md:items-center md:justify-between lg:px-10">
+      
+<div className="border-y border-gray-800 bg-gray-900">
+  <div className="mx-auto flex max-w-7xl flex-col gap-5 px-6 py-8 sm:px-8 md:flex-row md:items-center md:justify-between lg:px-10">
+    <div>
+      <h3 className="text-lg font-semibold text-white">
+        Stay Updated
+      </h3>
 
-          <div>
-            <h3 className="text-lg font-semibold text-white">
-              Stay Updated
-            </h3>
+      <p className="mt-1 text-sm text-gray-400">
+        Get updates on new products, deals and special offers.
+      </p>
 
-            <p className="mt-1 text-sm text-gray-400">
-              Get updates on new products, deals and special offers.
-            </p>
-          </div>
+      {message && (
+        <p
+          role="status"
+          aria-live="polite"
+          className={`mt-2 text-sm ${
+            status === "success"
+              ? "text-green-400"
+              : "text-red-400"
+          }`}
+        >
+          {message}
+        </p>
+      )}
+    </div>
 
-          <form
-            className="flex w-full max-w-md"
-            onSubmit={(event) => {
-              event.preventDefault();
-            }}
-          >
-            <input
-              type="email"
-              placeholder="Enter your email"
-              aria-label="Email address"
-              className="min-w-0 flex-1 rounded-l-lg border border-gray-700 bg-gray-950 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500 focus:border-gray-400"
-            />
+    <form
+      className="flex w-full max-w-md"
+      onSubmit={handleSubscribe}
+    >
+      <input
+        type="email"
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+        placeholder="Enter your email"
+        aria-label="Email address"
+        autoComplete="email"
+        required
+        disabled={isSubmitting}
+        className="min-w-0 flex-1 rounded-l-lg border border-gray-700 bg-gray-950 px-4 py-3 text-sm text-white outline-none placeholder:text-gray-500 focus:border-blue-500 disabled:opacity-60"
+      />
 
-            <button
-              type="submit"
-              className="rounded-r-lg bg-white px-5 py-3 text-sm font-semibold text-gray-900 transition hover:bg-gray-200"
-            >
-              Subscribe
-            </button>
-          </form>
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="rounded-r-lg bg-white px-5 py-3 text-sm font-semibold text-gray-900 transition hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {isSubmitting ? "Subscribing..." : "Subscribe"}
+      </button>
+    </form>
+  </div>
+</div>
 
-        </div>
-      </div>
 
 
       {/* =========================

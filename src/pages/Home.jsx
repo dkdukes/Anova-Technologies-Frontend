@@ -579,17 +579,23 @@ export default function Home() {
           </div>
 
           {/* HERO VISUAL */}
+          
+          {/* HERO VISUAL */}
           <div className="relative">
             <div className="relative flex min-h-[380px] items-center justify-center overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-200">
 
+              {/* Decorative shapes */}
               <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-blue-100" />
 
               <div className="absolute -bottom-20 -left-16 h-56 w-56 rounded-full bg-gray-100" />
 
-              <div className="relative text-center">
-                <div className="text-8xl sm:text-9xl">
-                  💻
-                </div>
+              {/* Image and text */}
+              <div className="relative z-10 w-full px-6 py-8 text-center">
+                <img
+                  src="/images/categories/legion.webp"
+                  alt="Lenovo Legion laptop"
+                  className="mx-auto h-56 w-full object-contain sm:h-64"
+                />
 
                 <h2 className="mt-6 text-2xl font-bold text-gray-900 sm:text-3xl">
                   Computing made simple
@@ -600,8 +606,9 @@ export default function Home() {
                 </p>
               </div>
             </div>
+            </div>
           </div>
-        </div>
+
       </section>
 
       {/* =====================================================
