@@ -84,6 +84,38 @@ export function AuthProvider({ children }) {
         isAdmin: user?.role === "admin",
     };
 
+
+useEffect(() => {
+    const handleTokenRefreshed = (event) => {
+        setAccessToken(event.detail.accessToken);
+    };
+
+    const handleAuthLogout = () => {
+        setAccessToken(null);
+        setUser(null);
+    };
+
+    window.addEventListener(
+        "auth:token-refreshed",
+        handleTokenRefreshed
+    );
+
+    window.addEventListener("auth:logout", handleAuthLogout);
+
+    return () => {
+        window.removeEventListener(
+            "auth:token-refreshed",
+            handleTokenRefreshed
+        );
+
+        window.removeEventListener(
+            "auth:logout",
+            handleAuthLogout
+        );
+    };
+}, []);
+
+
     return (
         <AuthContext.Provider value={value}>
             {children}

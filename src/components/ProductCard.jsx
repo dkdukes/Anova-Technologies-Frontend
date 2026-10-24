@@ -10,27 +10,19 @@ export default function ProductCard({ product }) {
   const salePrice = Number(product.sale_price || 0);
 
   const hasSale =
-    salePrice > 0 &&
-    salePrice < price;
+    salePrice > 0 && salePrice < price;
 
-  const currentPrice = hasSale
-    ? salePrice
-    : price;
-
-  // Stock
-  const stock = Number(
-    product.stock_quantity || 0
-  );
+  const currentPrice = hasSale ? salePrice : price;
 
   return (
-    <article className="group overflow-hidden rounded-2xl border border-gray-200 bg-white transition duration-200 hover:-translate-y-1 hover:shadow-xl">
+    <article className="group overflow-hidden rounded-xl border border-gray-200 bg-white transition duration-200 hover:-translate-y-1 hover:shadow-lg">
 
       {/* Product Image */}
       <Link
         to={`/products/${product.slug}`}
         className="block"
       >
-        <div className="relative flex h-64 items-center justify-center overflow-hidden bg-gray-50 p-6">
+        <div className="relative flex h-44 items-center justify-center overflow-hidden bg-gray-50 p-4">
 
           {hasImage ? (
             <img
@@ -43,11 +35,7 @@ export default function ProductCard({ product }) {
             />
           ) : (
             <div className="text-center">
-              <div className="text-7xl">
-                💻
-              </div>
-
-              <p className="mt-3 text-sm text-gray-400">
+              <p className="text-xs text-gray-400">
                 Product image coming soon
               </p>
             </div>
@@ -55,90 +43,89 @@ export default function ProductCard({ product }) {
 
           {/* Sale Badge */}
           {hasSale && (
-            <span className="absolute left-3 top-3 rounded-full bg-red-500 px-3 py-1 text-xs font-bold text-white">
+            <span className="absolute left-2 top-2 rounded-full bg-red-500 px-2 py-1 text-[10px] font-normal text-white">
               Sale
             </span>
           )}
 
           {/* Featured Badge */}
           {product.is_featured && (
-            <span className="absolute right-3 top-3 rounded-full bg-blue-600 px-3 py-1 text-xs font-bold text-white">
+            <span className="absolute right-2 top-2 rounded-full bg-blue-600 px-2 py-1 text-[10px] font-normal text-white">
               Featured
             </span>
           )}
-
         </div>
       </Link>
 
       {/* Product Information */}
-      <div className="p-5">
-
-        {/* Brand */}
-        {product.brand?.name && (
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-            {product.brand.name}
-          </p>
-        )}
+      <div className="p-3">
 
         {/* Product Name */}
         <Link
           to={`/products/${product.slug}`}
-          className="mt-2 block"
+          className="block"
         >
-          <h3 className="line-clamp-2 min-h-[3rem] font-semibold text-gray-900 transition group-hover:text-blue-600">
+          <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-normal text-gray-800 transition group-hover:text-blue-600">
             {product.name}
           </h3>
         </Link>
 
         {/* Price */}
-        <div className="mt-4">
-
+        <div className="mt-3">
           {hasSale ? (
-            <div className="flex items-center gap-3">
-
-              <span className="text-xl font-bold text-gray-900">
-                KSh{" "}
-                {currentPrice.toLocaleString()}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-base font-normal text-gray-900">
+                KSh {currentPrice.toLocaleString()}
               </span>
 
-              <span className="text-sm text-gray-400 line-through">
-                KSh{" "}
-                {price.toLocaleString()}
+              <span className="text-xs font-normal text-gray-400 line-through">
+                KSh {price.toLocaleString()}
               </span>
-
             </div>
           ) : (
-            <span className="text-xl font-bold text-gray-900">
-              KSh{" "}
-              {currentPrice.toLocaleString()}
+            <span className="text-base font-normal text-gray-900">
+              KSh {currentPrice.toLocaleString()}
             </span>
           )}
-
         </div>
 
-        {/* Stock */}
-        <div className="mt-3">
+          <div className="mt-1 flex items-center gap-1.5 text-sm">
+            {product.review_count > 0 ? (
+              <>
+                <span className="text-amber-500">
+                  {"★".repeat(
+                    Math.round(product.average_rating)
+                  )}
+                  {"☆".repeat(
+                    5 - Math.round(product.average_rating)
+                  )}
+                </span>
 
-          {stock > 0 ? (
-            <span className="text-sm font-medium text-green-600">
-              In stock
-            </span>
-          ) : (
-            <span className="text-sm font-medium text-red-600">
-              Out of stock
-            </span>
-          )}
+                <span className="font-medium text-gray-700">
+                  {Number(product.average_rating).toFixed(1)}
+                </span>
 
-        </div>
+                <span className="text-gray-500">
+                  ({product.review_count}{" "}
+                  {product.review_count === 1 ? "review" : "reviews"})
+                </span>
+              </>
+            ) : (
+              <>
+                <span className="text-amber-500">★★★★★</span>
+                <span className="font-medium text-gray-700">5.0</span>
+                <span className="text-gray-500">(0 reviews)</span>
+              </>
+            )}
+          </div>
 
         {/* View Product */}
         <Link
           to={`/products/${product.slug}`}
-          className="mt-4 block rounded-lg bg-gray-900 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-blue-600"
+          className="mt-3 block rounded-lg bg-gray-900 px-3 py-2 text-center text-xs font-normal text-white transition hover:bg-blue-600"
         >
           View Product
         </Link>
-
       </div>
     </article>
   );
