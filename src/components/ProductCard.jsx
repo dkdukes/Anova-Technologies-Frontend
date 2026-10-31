@@ -1,9 +1,14 @@
 
 import { Link } from "react-router-dom";
+import { useWishlist } from "../context/WishlistContext";
 
 export default function ProductCard({ product }) {
   const hasImage =
     product.images && product.images.length > 0;
+
+    const { toggleWishlist, isInWishlist } = useWishlist();
+
+    const isFavorite = isInWishlist(product.id);
 
   // Pricing
   const price = Number(product.price || 0);
@@ -40,6 +45,31 @@ export default function ProductCard({ product }) {
               </p>
             </div>
           )}
+
+          <button
+              type="button"
+              onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleWishlist(product);
+              }}
+              aria-label={
+                  isFavorite
+                      ? "Remove from wishlist"
+                      : "Add to wishlist"
+              }
+              className="absolute right-3 top-3 z-10 flex h-9 w-9
+                        items-center justify-center rounded-full
+                        bg-white shadow-md transition hover:scale-110"
+          >
+              <span
+                  className={`text-xl ${
+                      isFavorite ? "text-red-500" : "text-gray-400"
+                  }`}
+              >
+                  {isFavorite ? "♥" : "♡"}
+              </span>
+          </button>
 
           {/* Sale Badge */}
           {hasSale && (

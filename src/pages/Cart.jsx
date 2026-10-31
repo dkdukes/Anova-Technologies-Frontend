@@ -10,6 +10,61 @@ export default function Cart() {
     totalPrice,
   } = useCart();
 
+ 
+const handleWhatsAppOrder = () => {
+    if (!cartItems.length) return;
+
+    const phoneNumber = "254726128360";
+
+    const formatPrice = (price) =>
+        Number(price || 0).toLocaleString("en-KE");
+
+    const subtotal = cartItems.reduce((total, item) => {
+        const price = Number(item.current_price || item.price || 0);
+        return total + price * Number(item.quantity);
+    }, 0);
+
+    const orderDetails = cartItems.map((item, index) => {
+        const price = Number(item.current_price || item.price || 0);
+        const quantity = Number(item.quantity || 0);
+
+        return `
+${index + 1}. ${item.name}
+SKU: ${item.sku || "N/A"}
+Quantity: ${quantity}
+Unit Price: KSh ${formatPrice(price)}
+Item Total: KSh ${formatPrice(price * quantity)}
+`;
+    }).join("\n");
+
+    const message = `
+Hello Anova Technologies!
+
+I would like to place an order.
+
+ORDER DETAILS:
+${orderDetails}
+
+--------------------------------
+Subtotal: KSh ${formatPrice(subtotal)}
+Delivery: To be confirmed
+--------------------------------
+
+CUSTOMER DETAILS:
+Please let me know what information you need to complete my order.
+
+Kindly confirm product availability, delivery charges and payment instructions.
+
+Thank you for choosing Anova Technologies!
+`;
+
+    const whatsappURL =
+        `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+
+    window.open(whatsappURL, "_blank", "noopener,noreferrer");
+};
+
+
   /* Empty cart */
   if (cartItems.length === 0) {
     return (
@@ -258,11 +313,21 @@ export default function Cart() {
 
           <Link
             to="/checkout"
-            className="mt-6 block w-full rounded-lg bg-blue-600 px-6 py-3 text-center font-semibold text-white transition hover:bg-blue-700"
+            className="mt-6 block w-full rounded-lg bg-blue-600 px-6 py-3 mb-4 text-center font-semibold text-white transition hover:bg-blue-700"
           >
             Proceed to Checkout
           </Link>
 
+          <button
+              onClick={handleWhatsAppOrder}
+              disabled={cartItems.length === 0}
+              className="w-full flex items-center justify-center gap-2
+                        bg-green-600 hover:bg-green-700
+                        text-white py-3 rounded-lg
+                        font-medium transition-colors"
+          >
+              <span>Order via WhatsApp</span>
+          </button>
 
           <div className="mt-5 rounded-lg bg-gray-50 p-4">
 

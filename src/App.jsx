@@ -34,6 +34,7 @@ import ContactSupport from "./pages/ContactSupport";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import CookiesPolicy from "./pages/CookiesPolicy";
+import Wishlist from "./pages/Wishlist";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -90,6 +91,8 @@ function App() {
                             />
 
                             <Route path="/delivery-information" element={<DeliveryInformation />} />
+
+                            <Route path="/wishlist" element={<Wishlist />} />
 
                             <Route
                                 path="/returns-refunds"

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
+import { useWishlist } from "../context/WishlistContext";
 
 const categoryMenus = {
   Laptops: [
@@ -46,6 +47,7 @@ export default function Navbar() {
   const [accountOpen, setAccountOpen] = useState(false);
   const { totalItems } = useCart();
   const { user, logout, isAuthenticated } = useAuth();
+  const { wishlist } = useWishlist();
 
   const navigate = useNavigate();
 
@@ -284,6 +286,24 @@ export default function Navbar() {
               <span className="hidden xl:inline">Sign in</span>
             </Link>
           )}
+
+          <Link
+              to="/wishlist"
+              className="relative flex items-center text-gray-700 transition hover:text-red-500"
+              aria-label="Wishlist"
+          >
+              <span className="text-2xl">
+                  ♡
+              </span>
+
+              {wishlist.length > 0 && (
+                  <span className="absolute -right-2 -top-2 flex h-5 w-5
+                                  items-center justify-center rounded-full
+                                  bg-red-500 text-[10px] font-medium text-white">
+                      {wishlist.length}
+                  </span>
+              )}
+          </Link>
 
           {/* Cart */}
           <Link
