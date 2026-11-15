@@ -1,30 +1,66 @@
 
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+    createContext,
+    useContext,
+    useEffect,
+    useState,
+} from "react";
+
 import api from "../services/api";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
+
     const [accessToken, setAccessToken] = useState(
         localStorage.getItem("accessToken")
     );
+
     const [loading, setLoading] = useState(true);
 
-    // Restore logged-in user when the application starts
+    // Restore authentication when the application starts
     useEffect(() => {
-        const storedUser = localStorage.getItem("user");
+        const restoreAuthentication = () => {
+            const storedUser = localStorage.getItem("user");
+            const storedToken = localStorage.getItem("accessToken");
+            const storedRefresh = localStorage.getItem("refreshToken");
 
-        if (storedUser) {
-            try {
-                setUser(JSON.parse(storedUser));
-            } catch (error) {
-                console.error("Failed to restore user:", error);
+            if (!storedUser || !storedToken || !storedRefresh) {
                 localStorage.removeItem("user");
-            }
-        }
+                localStorage.removeItem("accessToken");
+                localStorage.removeItem("refreshToken");
 
-        setLoading(false);
+                setUser(null);
+                setAccessToken(null);
+                setLoading(false);
+
+                return;
+            }
+
+            try {
+                const parsedUser = JSON.parse(storedUser);
+
+                setUser(parsedUser);
+                setAccessToken(storedToken);
+            } catch (error) {
+                console.error(
+                    "Failed to restore authentication:",
+                    error
+                );
+
+                localStorage.removeItem("user");
+                localStorage.removeItem("accessToken");
+                localStorage.removeItem("refreshToken");
+
+                setUser(null);
+                setAccessToken(null);
+            }
+
+            setLoading(false);
+        };
+
+        restoreAuthentication();
     }, []);
 
     // Register customer
@@ -49,10 +85,12 @@ export function AuthProvider({ children }) {
 
         const { access, refresh, user } = response.data;
 
+        // Store authentication credentials
         localStorage.setItem("accessToken", access);
         localStorage.setItem("refreshToken", refresh);
         localStorage.setItem("user", JSON.stringify(user));
 
+        // Update authentication state
         setAccessToken(access);
         setUser(user);
 
@@ -67,7 +105,48 @@ export function AuthProvider({ children }) {
 
         setAccessToken(null);
         setUser(null);
+
+        // Notify other contexts and Axios
+        window.dispatchEvent(new Event("auth:logout"));
     };
+
+    // Synchronize token refresh and automatic logout
+    useEffect(() => {
+        const handleTokenRefreshed = (event) => {
+            setAccessToken(event.detail.accessToken);
+        };
+
+        const handleAuthLogout = () => {
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("refreshToken");
+            localStorage.removeItem("user");
+
+            setAccessToken(null);
+            setUser(null);
+        };
+
+        window.addEventListener(
+            "auth:token-refreshed",
+            handleTokenRefreshed
+        );
+
+        window.addEventListener(
+            "auth:logout",
+            handleAuthLogout
+        );
+
+        return () => {
+            window.removeEventListener(
+                "auth:token-refreshed",
+                handleTokenRefreshed
+            );
+
+            window.removeEventListener(
+                "auth:logout",
+                handleAuthLogout
+            );
+        };
+    }, []);
 
     const value = {
         user,
@@ -83,38 +162,6 @@ export function AuthProvider({ children }) {
         isStaff: user?.role === "staff",
         isAdmin: user?.role === "admin",
     };
-
-
-useEffect(() => {
-    const handleTokenRefreshed = (event) => {
-        setAccessToken(event.detail.accessToken);
-    };
-
-    const handleAuthLogout = () => {
-        setAccessToken(null);
-        setUser(null);
-    };
-
-    window.addEventListener(
-        "auth:token-refreshed",
-        handleTokenRefreshed
-    );
-
-    window.addEventListener("auth:logout", handleAuthLogout);
-
-    return () => {
-        window.removeEventListener(
-            "auth:token-refreshed",
-            handleTokenRefreshed
-        );
-
-        window.removeEventListener(
-            "auth:logout",
-            handleAuthLogout
-        );
-    };
-}, []);
-
 
     return (
         <AuthContext.Provider value={value}>
@@ -134,4 +181,3 @@ export function useAuth() {
 
     return context;
 }
-

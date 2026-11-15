@@ -13,12 +13,13 @@ const refreshClient = axios.create({
 
 let refreshPromise = null;
 
-// Attach the current access token to API requests.
+// Attach the latest access token to every API request.
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem("accessToken");
 
         if (token) {
+            config.headers = config.headers || {};
             config.headers.Authorization = `Bearer ${token}`;
         }
 
@@ -33,19 +34,17 @@ api.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
-        if (!originalRequest || error.response?.status !== 401) {
+        if (
+            !originalRequest ||
+            error.response?.status !== 401 ||
+            originalRequest._retry
+        ) {
             return Promise.reject(error);
         }
 
-        // Never retry the same request indefinitely.
-        if (originalRequest._retry) {
-            return Promise.reject(error);
-        }
-
-        // Don't refresh when the failed request is itself a login
-        // or token-refresh request.
         const url = originalRequest.url || "";
 
+        // Do not refresh login or refresh requests.
         if (
             url.includes("auth/login/") ||
             url.includes("token/refresh/")
@@ -63,7 +62,6 @@ api.interceptors.response.use(
         originalRequest._retry = true;
 
         try {
-            // Share one refresh request across concurrent failures.
             if (!refreshPromise) {
                 refreshPromise = refreshClient
                     .post("token/refresh/", {
@@ -74,15 +72,15 @@ api.interceptors.response.use(
 
                         localStorage.setItem("accessToken", access);
 
-                        // Simple JWT may return a new refresh token
-                        // when refresh-token rotation is enabled.
                         if (refresh) {
                             localStorage.setItem("refreshToken", refresh);
                         }
 
                         window.dispatchEvent(
                             new CustomEvent("auth:token-refreshed", {
-                                detail: { accessToken: access },
+                                detail: {
+                                    accessToken: access,
+                                },
                             })
                         );
 
@@ -96,10 +94,12 @@ api.interceptors.response.use(
             const newAccessToken = await refreshPromise;
 
             originalRequest.headers = originalRequest.headers || {};
+
             originalRequest.headers.Authorization =
                 `Bearer ${newAccessToken}`;
 
             return api(originalRequest);
+
         } catch (refreshError) {
             clearAuthentication();
             return Promise.reject(refreshError);
