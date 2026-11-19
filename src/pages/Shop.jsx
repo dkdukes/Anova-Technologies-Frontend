@@ -11,18 +11,29 @@ export default function Shop() {
   const category = searchParams.get("category");
 
   const [products, setProducts] = useState([]);
-
   const [loading, setLoading] = useState(true);
-
   const [error, setError] = useState("");
 
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [totalProducts, setTotalProducts] = useState(0);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [search, category, pageSize]);
+
+  // Fetch products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
         setError("");
 
-        const params = {};
+        const params = {
+          page,
+          page_size: pageSize,
+        };
 
         if (search) {
           params.search = search;
@@ -40,6 +51,10 @@ export default function Shop() {
           response.data.results || response.data
         );
 
+        setTotalProducts(
+          response.data.count ?? response.data.length
+        );
+
       } catch (err) {
         console.error("Product API error:", err);
 
@@ -53,8 +68,21 @@ export default function Shop() {
     };
 
     fetchProducts();
-  }, [search, category]);
+  }, [search, category, page, pageSize]);
 
+  const totalPages = Math.ceil(
+    totalProducts / pageSize
+  );
+
+  const startProduct =
+    totalProducts === 0
+      ? 0
+      : (page - 1) * pageSize + 1;
+
+  const endProduct = Math.min(
+    page * pageSize,
+    totalProducts
+  );
 
   return (
     <section className="mx-auto max-w-7xl px-6 py-12">
@@ -87,7 +115,6 @@ export default function Shop() {
 
       </div>
 
-
       {/* Loading */}
       {loading && (
         <div className="flex min-h-[300px] flex-col items-center justify-center">
@@ -101,7 +128,6 @@ export default function Shop() {
         </div>
       )}
 
-
       {/* Error */}
       {!loading && error && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
@@ -112,7 +138,6 @@ export default function Shop() {
 
         </div>
       )}
-
 
       {/* Empty */}
       {!loading && !error && products.length === 0 && (
@@ -133,18 +158,44 @@ export default function Shop() {
         </div>
       )}
 
-
       {/* Products */}
       {!loading && !error && products.length > 0 && (
-
         <>
-          <div className="mb-5 text-sm text-gray-500">
-            {products.length}{" "}
-            {products.length === 1
-              ? "product"
-              : "products"}
+          {/* Results and page size selector */}
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+
+            <p className="text-sm text-gray-500">
+              Showing {startProduct}–{endProduct} of{" "}
+              {totalProducts} products
+            </p>
+
+            <div className="flex items-center gap-2">
+
+              <label
+                htmlFor="pageSize"
+                className="text-sm text-gray-600"
+              >
+                Show:
+              </label>
+
+              <select
+                id="pageSize"
+                value={pageSize}
+                onChange={(e) =>
+                  setPageSize(Number(e.target.value))
+                }
+                className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500"
+              >
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+
+            </div>
+
           </div>
 
+          {/* Product Grid */}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
 
             {products.map((product) => (
@@ -155,6 +206,34 @@ export default function Shop() {
             ))}
 
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+
+              <button
+                onClick={() => setPage((prev) => prev - 1)}
+                disabled={page === 1}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Previous
+              </button>
+
+              <span className="text-sm text-gray-600">
+                Page {page} of {totalPages}
+              </span>
+
+              <button
+                onClick={() => setPage((prev) => prev + 1)}
+                disabled={page === totalPages}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Next
+              </button>
+
+            </div>
+          )}
+
         </>
       )}
 
