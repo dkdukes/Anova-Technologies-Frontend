@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
 const counties = [
@@ -62,6 +63,8 @@ export default function Checkout() {
     clearCart,
   } = useCart();
 
+  const { user, isAuthenticated, register, login, loading: authLoading } = useAuth();
+
   const [form, setForm] = useState({
     full_name: "",
     email: "",
@@ -75,6 +78,14 @@ export default function Checkout() {
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState("");
 
+  const [createAccount, setCreateAccount] = useState(false);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
+  const [accountErrors, setAccountErrors] = useState({});
+  const [marketingConsent, setMarketingConsent] = useState(false);
+  const [marketingNotice, setMarketingNotice] = useState("");
+
   const [loading, setLoading] = useState(false);
 
   const [deliveryFee, setDeliveryFee] = useState(null);
@@ -84,6 +95,18 @@ export default function Checkout() {
 
   const [paymentStatus, setPaymentStatus] = useState(null);
   const [paymentMessage, setPaymentMessage] = useState("");
+
+  useEffect(() => {
+    if (authLoading || !isAuthenticated || !user) return;
+
+    const fullName = [user.first_name, user.last_name].filter(Boolean).join(" ");
+    setForm((current) => ({
+      ...current,
+      full_name: current.full_name || fullName,
+      email: current.email || user.email || "",
+      phone: current.phone || user.phone || "",
+    }));
+  }, [authLoading, isAuthenticated, user]);
 
   // -----------------------------------------
   // Normalize Kenyan phone number
@@ -431,7 +454,33 @@ export default function Checkout() {
       return;
     }
 
+    const newAccountErrors = {};
+
+
+    if (createAccount && !isAuthenticated) {
+
+      if (!username.trim()) newAccountErrors.username = "Username is required.";
+
+      if (password.length < 8) newAccountErrors.password = "Password must contain at least 8 characters.";
+
+      if (password !== password2) newAccountErrors.password2 = "Passwords do not match.";
+
+    }
+
+
+    setAccountErrors(newAccountErrors);
+
+    if (Object.keys(newAccountErrors).length > 0) {
+
+      document.getElementById(Object.keys(newAccountErrors)[0])?.focus();
+
+      return;
+
+    }
+
+
     const normalizedPhone =
+
       normalizePhoneNumber(form.phone);
 
     if (!normalizedPhone) {
@@ -449,7 +498,42 @@ export default function Checkout() {
     }
 
     try {
+
       setLoading(true);
+
+
+      if (createAccount && !isAuthenticated) {
+
+        const nameParts = form.full_name.trim().split(/\s+/);
+
+        const firstName = nameParts.shift() || "";
+
+        const lastName = nameParts.join(" ");
+
+
+        await register({
+
+          username: username.trim(),
+
+          email: form.email.trim(),
+
+          first_name: firstName,
+
+          last_name: lastName,
+
+          phone: normalizedPhone,
+
+          password,
+
+          password2,
+
+        });
+
+
+        await login(username.trim(), password);
+
+      }
+
 
       const payload = {
         customer: {
@@ -487,6 +571,22 @@ export default function Checkout() {
         "orders/create/",
         payload
       );
+
+      if (marketingConsent) {
+        try {
+          await api.post("customers/marketing/subscribe/", {
+            full_name: form.full_name.trim(),
+            email: form.email.trim(),
+            phone: normalizedPhone,
+          });
+          setMarketingNotice("You are subscribed to Anova Technologies offers.");
+        } catch (subscriptionError) {
+          console.error("Marketing subscription error:", subscriptionError);
+          setMarketingNotice(
+            "Your order was placed, but we could not save your email preferences. Please contact us if you would still like to subscribe."
+          );
+        }
+      }
 
       // ---------------------------------------
       // M-PESA
@@ -535,8 +635,15 @@ export default function Checkout() {
         err
       );
 
+      const responseData = err.response?.data;
       const backendError =
-        err.response?.data?.error ||
+        responseData?.error ||
+        responseData?.detail ||
+        responseData?.username?.[0] ||
+        responseData?.email?.[0] ||
+        responseData?.password?.[0] ||
+        responseData?.non_field_errors?.[0] ||
+        (typeof responseData === "string" ? responseData : null) ||
         "Unable to place your order. Please try again.";
 
       setServerError(
@@ -835,6 +942,12 @@ export default function Checkout() {
         <p className="mt-2 text-gray-500">
           Complete your order details below.
         </p>
+        <p className="mt-3 text-sm text-gray-600">
+          Already have an account?{" "}
+          <Link to="/login" className="font-semibold text-blue-600 hover:text-blue-700">
+            Log in
+          </Link>{" "}or continue as a guest.
+        </p>
       </div>
 
       <form
@@ -846,6 +959,70 @@ export default function Checkout() {
 
           {/* LEFT */}
           <div className="space-y-8">
+
+            {/* Account and marketing preferences */}
+            <div className="rounded-2xl border border-gray-200 bg-white p-6">
+              {isAuthenticated ? (
+                <div>
+                  <p className="font-semibold text-gray-900">
+                    Welcome back{user?.first_name ? `, ${user.first_name}` : ""}!
+                  </p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Your account details have been used to prefill the contact information below.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <label className="flex cursor-pointer items-start gap-3">
+                    <input type="checkbox" checked={createAccount}
+                      onChange={(event) => { setCreateAccount(event.target.checked); setAccountErrors({}); }}
+                      className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                    <span>
+                      <span className="block font-semibold text-gray-900">Create an account for faster checkout next time</span>
+                      <span className="mt-1 block text-sm text-gray-500">Choose a username and password. You can also continue without an account.</span>
+                    </span>
+                  </label>
+                  {createAccount && (
+                    <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                      <div className="sm:col-span-2">
+                        <label htmlFor="username" className="text-sm font-semibold text-gray-700">Username</label>
+                        <input id="username" type="text" autoComplete="username" value={username}
+                          onChange={(event) => setUsername(event.target.value)} className={inputClass("username")}
+                          placeholder="Choose a username" aria-invalid={!!accountErrors.username} />
+                        {accountErrors.username && <p className="mt-2 text-sm text-red-600" role="alert">{accountErrors.username}</p>}
+                      </div>
+                      <div>
+                        <label htmlFor="password" className="text-sm font-semibold text-gray-700">Password</label>
+                        <input id="password" type="password" autoComplete="new-password" value={password}
+                          onChange={(event) => setPassword(event.target.value)} className={inputClass("password")}
+                          placeholder="At least 8 characters" aria-invalid={!!accountErrors.password} />
+                        {accountErrors.password && <p className="mt-2 text-sm text-red-600" role="alert">{accountErrors.password}</p>}
+                      </div>
+                      <div>
+                        <label htmlFor="password2" className="text-sm font-semibold text-gray-700">Confirm password</label>
+                        <input id="password2" type="password" autoComplete="new-password" value={password2}
+                          onChange={(event) => setPassword2(event.target.value)} className={inputClass("password2")}
+                          placeholder="Confirm your password" aria-invalid={!!accountErrors.password2} />
+                        {accountErrors.password2 && <p className="mt-2 text-sm text-red-600" role="alert">{accountErrors.password2}</p>}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              <div className="mt-5 border-t border-gray-100 pt-5">
+                <label className="flex cursor-pointer items-start gap-3">
+                  <input type="checkbox" checked={marketingConsent}
+                    onChange={(event) => setMarketingConsent(event.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                  <span>
+                    <span className="block text-sm font-semibold text-gray-900">Email me offers, discounts and product updates</span>
+                    <span className="mt-1 block text-xs text-gray-500">Optional. You can unsubscribe from marketing emails at any time.</span>
+                  </span>
+                </label>
+                {marketingNotice && <p className="mt-3 text-sm text-blue-700" role="status">{marketingNotice}</p>}
+              </div>
+            </div>
 
             {/* Contact */}
             <div className="rounded-2xl border border-gray-200 bg-white p-6">
