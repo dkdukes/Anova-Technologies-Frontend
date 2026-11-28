@@ -90,6 +90,12 @@ function App() {
                                 element={<Cart />}
                             />
 
+                            {/* Guest and authenticated customers can both check out. */}
+                            <Route
+                                path="/checkout"
+                                element={<Checkout />}
+                            />
+
                             <Route path="/delivery-information" element={<DeliveryInformation />} />
 
                             <Route path="/wishlist" element={<Wishlist />} />
@@ -119,30 +125,6 @@ function App() {
                                 element={<CookiesPolicy />}
                             />
 
-
-
-                        </Route>
-
-
-                        {/* =================================
-                            CUSTOMER-ONLY CHECKOUT
-                        ================================= */}
-
-                        <Route
-                            element={
-                                <ProtectedRoute
-                                    allowedRoles={["customer"]}
-                                />
-                            }
-                        >
-                            <Route element={<MainLayout />}>
-
-                                <Route
-                                    path="/checkout"
-                                    element={<Checkout />}
-                                />
-
-                            </Route>
                         </Route>
 
 
