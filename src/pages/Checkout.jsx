@@ -942,12 +942,6 @@ export default function Checkout() {
         <p className="mt-2 text-gray-500">
           Complete your order details below.
         </p>
-        <p className="mt-3 text-sm text-gray-600">
-          Already have an account?{" "}
-          <Link to="/login" className="font-semibold text-blue-600 hover:text-blue-700">
-            Log in
-          </Link>{" "}or continue as a guest.
-        </p>
       </div>
 
       <form
